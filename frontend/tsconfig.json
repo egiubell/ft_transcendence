@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./frontend",
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "ES6",
+    "module": "commonjs"
+  },
+  "include": ["frontend/app.ts"]
+}
