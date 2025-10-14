@@ -1,0 +1,19 @@
+{
+  "name": "pong-tournament-app",
+  "version": "1.0.0",
+  "description": "Tournament-style Pong game application",
+  "scripts": {
+    "compile": "tsc",
+    "build": "npm run compile && npm run copy-assets",
+    "copy-assets": "cp src/index.html build/ && cp -r src/styles build/",
+    "watch": "tsc --watch",
+    "clean-build": "rm -rf build && mkdir -p build",
+    "dev": "npm run clean-build && npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0"
+  },
+  "keywords": ["pong", "tournament", "multiplayer"],
+  "author": "Student Developer",
+  "license": "MIT"
+}

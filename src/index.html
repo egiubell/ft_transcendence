@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Tournament Championship</title>
+    <link rel="stylesheet" href="styles/app.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
+</head>
+<body>
+    <div id="app-container">
+        <header class="main-header">
+            <h1>Pong Tournament</h1>
+            <nav id="navigation-menu"></nav>
+        </header>
+        
+        <main id="content-area">
+            <div id="welcome-screen" class="screen active">
+                <h2>Welcome to Pong Tournament!</h2>
+                <button id="start-tournament-btn" class="primary-btn">Start New Tournament</button>
+                <button id="quick-game-btn" class="secondary-btn">Quick Game</button>
+            </div>
+            
+            <div id="tournament-setup" class="screen">
+                <h2>Tournament Setup</h2>
+                <div id="player-registration">
+                    <input type="text" id="player-alias" placeholder="Enter your alias">
+                    <button id="add-player-btn">Add Player</button>
+                </div>
+                <div id="registered-players"></div>
+                <button id="begin-tournament-btn" disabled>Begin Tournament</button>
+            </div>
+            
+            <div id="game-arena" class="screen">
+                <div id="game-info">
+                    <span id="player1-name">Player 1</span>
+                    <span id="game-score">0 - 0</span>
+                    <span id="player2-name">Player 2</span>
+                </div>
+                <canvas id="pong-canvas" width="800" height="400"></canvas>
+                <div id="game-controls">
+                    <p>Player 1: W/S keys | Player 2: Arrow Up/Down keys</p>
+                </div>
+            </div>
+            
+            <div id="tournament-bracket" class="screen">
+                <h2>Tournament bracket</h2>
+                <div id="bracket-display"></div>
+                <button id="next-match-btn">Start Next Match</button>
+            </div>
+        </main>
+    </div>
+    
+    <script type="module" src="main.js"></script>
+</body>
+</html>
