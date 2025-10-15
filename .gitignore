@@ -4,8 +4,7 @@
 # # Dependencies
 # node_modules/
 # npm-debug.log*
-# # Don't ignore package-lock.json - it's needed for Docker
-# # package-lock.json
+# package-lock.json
 
 # # Build output
 # build/

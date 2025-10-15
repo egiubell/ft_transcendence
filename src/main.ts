@@ -29,7 +29,11 @@ class PongTournamentApp {
 
 	constructor() {
 		this.initializeEventListeners();
-		this.showScreen('welcome-screen');
+		this.initializeRouter();
+		
+		// Handle initial load from URL hash
+		const initialScreen = window.location.hash.slice(1) || 'welcome-screen';
+		this.showScreen(initialScreen, false);
 	}
 
 	private initializeEventListeners(): void {
@@ -61,66 +65,163 @@ class PongTournamentApp {
 		});
 	}
 
-	private showScreen(screenId: string): void {
+	private initializeRouter(): void {
+		// Handle browser back/forward buttons
+		window.addEventListener('popstate', (e) => {
+			const screen = e.state?.screen || 'welcome-screen';
+			this.showScreen(screen, false);
+		});
+
+		// Set initial state
+		if (!history.state) {
+			const initialScreen = window.location.hash.slice(1) || 'welcome-screen';
+			history.replaceState({ screen: initialScreen }, this.getScreenTitle(initialScreen), `#${initialScreen}`);
+		}
+	}
+
+	private showScreen(screenId: string, pushState: boolean = true): void {
+		// Validate screen ID to prevent XSS
+		const validScreens = ['welcome-screen', 'tournament-setup', 'game-arena', 'tournament-bracket'];
+		if (!validScreens.includes(screenId)) {
+			screenId = 'welcome-screen';
+		}
+
 		document.querySelectorAll('.screen').forEach(screen => {
 			screen.classList.remove('active');
 		});
-		document.getElementById(screenId)?.classList.add('active');
-		this.currentScreen = screenId;
+		
+		const targetScreen = document.getElementById(screenId);
+		if (targetScreen) {
+			targetScreen.classList.add('active');
+			this.currentScreen = screenId;
+		}
+		
+		// Update browser history for SPA navigation
+		if (pushState) {
+			const title = this.getScreenTitle(screenId);
+			history.pushState({ screen: screenId }, title, `#${screenId}`);
+			document.title = title;
+		}
+	}
+
+	private getScreenTitle(screenId: string): string {
+		const titles: { [key: string]: string } = {
+			'welcome-screen': 'Pong Tournament - Home',
+			'tournament-setup': 'Pong Tournament - Setup',
+			'game-arena': 'Pong Tournament - Game',
+			'tournament-bracket': 'Pong Tournament - Bracket'
+		};
+		return titles[screenId] || 'Pong Tournament Championship';
+	}
+
+	private sanitizeInput(input: string): string {
+		// Remove HTML tags and potentially dangerous characters
+		return input
+			.replace(/[<>\"'&]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	private validateAlias(alias: string): boolean {
+		// Validate alias: 3-20 characters, alphanumeric, spaces, hyphens, underscores only
+		const aliasRegex = /^[a-zA-Z0-9\s\-_]{3,20}$/;
+		return aliasRegex.test(alias) && alias.length >= 3 && alias.length <= 20;
 	}
 
 	private registerPlayer(): void {
 		const aliasInput = document.getElementById('player-alias') as HTMLInputElement;
-		const alias = aliasInput.value.trim();
+		if (!aliasInput) return;
 
-		if (alias && !this.registeredPlayers.find(p => p.alias === alias)) {
-			const newPlayer: PlayerInfo = {
-				alias: alias,
-				id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
-			};
-			
-			this.registeredPlayers.push(newPlayer);
-			this.updatePlayerDisplay();
-			aliasInput.value = '';
-			
-			const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
-			beginBtn.disabled = this.registeredPlayers.length < 2;
-		} else if (alias && this.registeredPlayers.find(p => p.alias === alias)) {
-			alert('Player alias already exists!');
+		const rawAlias = aliasInput.value;
+		const sanitizedAlias = this.sanitizeInput(rawAlias);
+
+		// Input validation
+		if (!this.validateAlias(sanitizedAlias)) {
+			this.showError('Invalid alias! Use only letters, numbers, spaces, hyphens, and underscores (3-20 characters).');
+			return;
 		}
+
+		// Check for duplicate aliases
+		if (this.registeredPlayers.find(p => p.alias.toLowerCase() === sanitizedAlias.toLowerCase())) {
+			this.showError('Player alias already exists!');
+			return;
+		}
+
+		// Create new player
+		const newPlayer: PlayerInfo = {
+			alias: sanitizedAlias,
+			id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+		};
+		
+		this.registeredPlayers.push(newPlayer);
+		this.updatePlayerDisplay();
+		aliasInput.value = '';
+		
+		// Update tournament start button state
+		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
+		if (beginBtn) {
+			beginBtn.disabled = this.registeredPlayers.length < 2;
+		}
+	}
+
+	private showError(message: string): void {
+		// Sanitize error message to prevent XSS
+		const sanitizedMessage = this.sanitizeInput(message);
+		alert(sanitizedMessage);
 	}
 
 	private updatePlayerDisplay(): void {
 		const playersDiv = document.getElementById('registered-players');
-		if (playersDiv) {
-			playersDiv.innerHTML = this.registeredPlayers
-				.map((player, index) => 
-					`<span class="player-tag">${player.alias} 
-					 <button onclick="this.parentElement.remove(); window.app.removePlayer('${player.id}')" class="remove-btn">×</button>
-					 </span>`
-				)
-				.join('');
-		}
+		if (!playersDiv) return;
+
+		// Use safe DOM manipulation instead of innerHTML
+		playersDiv.innerHTML = '';
+		
+		this.registeredPlayers.forEach((player) => {
+			const playerTag = document.createElement('span');
+			playerTag.className = 'player-tag';
+			
+			const playerName = document.createElement('span');
+			playerName.textContent = player.alias;
+			
+			const removeBtn = document.createElement('button');
+			removeBtn.className = 'remove-btn';
+			removeBtn.textContent = '×';
+			removeBtn.title = `Remove ${player.alias}`;
+			removeBtn.addEventListener('click', () => this.removePlayer(player.id));
+			
+			playerTag.appendChild(playerName);
+			playerTag.appendChild(removeBtn);
+			playersDiv.appendChild(playerTag);
+		});
 	}
 
 	public removePlayer(playerId: string): void {
-		this.registeredPlayers = this.registeredPlayers.filter(p => p.id !== playerId);
+		// Sanitize player ID
+		const sanitizedId = this.sanitizeInput(playerId);
+		
+		this.registeredPlayers = this.registeredPlayers.filter(p => p.id !== sanitizedId);
 		this.updatePlayerDisplay();
+		
 		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
-		beginBtn.disabled = this.registeredPlayers.length < 2;
+		if (beginBtn) {
+			beginBtn.disabled = this.registeredPlayers.length < 2;
+		}
 	}
 
 	private startTournament(): void {
 		if (this.registeredPlayers.length >= 2) {
 			this.generateTournamentBracket();
 			this.showScreen('tournament-bracket');
+		} else {
+			this.showError('Need at least 2 players to start a tournament!');
 		}
 	}
 
 	private generateTournamentBracket(): void {
 		const players = [...this.registeredPlayers];
 		
-		// Shuffle players for fair bracket
+		// Shuffle players for fair bracket using Fisher-Yates algorithm
 		for (let i = players.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[players[i], players[j]] = [players[j], players[i]];
@@ -143,21 +244,23 @@ class PongTournamentApp {
 		// Create first round matches
 		const firstRound: GameMatch[] = [];
 		for (let i = 0; i < currentPlayers.length; i += 2) {
-			firstRound.push({
-				player1: currentPlayers[i],
-				player2: currentPlayers[i + 1],
-				matchId: `round-0-match-${i/2}`,
-				round: 0
-			});
+			if (i + 1 < currentPlayers.length) {
+				firstRound.push({
+					player1: currentPlayers[i],
+					player2: currentPlayers[i + 1],
+					matchId: `round-0-match-${Math.floor(i/2)}`,
+					round: 0
+				});
+			}
 		}
 
 		this.tournamentBracket.rounds.push(firstRound);
 
-		// If there was a bye player, add them to the next round
-		if (byePlayer) {
-			if (this.tournamentBracket.rounds.length === 1) {
-				this.tournamentBracket.rounds.push([]);
-			}
+		// Handle bye player by advancing them automatically
+		if (byePlayer && firstRound.length > 0) {
+			// Bye player gets added to next round
+			const nextRound: GameMatch[] = [];
+			this.tournamentBracket.rounds.push(nextRound);
 		}
 
 		this.displayBracket();
@@ -167,64 +270,137 @@ class PongTournamentApp {
 		const bracketDiv = document.getElementById('bracket-display');
 		if (!bracketDiv) return;
 
-		let html = '<div class="tournament-bracket">';
+		// Clear previous content
+		bracketDiv.innerHTML = '';
+
+		const bracketContainer = document.createElement('div');
+		bracketContainer.className = 'tournament-bracket';
 		
-		// Show all rounds
+		// Display all rounds
 		this.tournamentBracket.rounds.forEach((round, roundIndex) => {
-			html += `<div class="round">
-						<h3>Round ${roundIndex + 1}</h3>
-						<div class="matches">`;
+			const roundDiv = document.createElement('div');
+			roundDiv.className = 'round';
+			
+			const roundTitle = document.createElement('h3');
+			roundTitle.textContent = `Round ${roundIndex + 1}`;
+			roundDiv.appendChild(roundTitle);
+			
+			const matchesDiv = document.createElement('div');
+			matchesDiv.className = 'matches';
 			
 			round.forEach((match, matchIndex) => {
 				const isCurrentMatch = roundIndex === this.tournamentBracket.currentRound && 
 									 matchIndex === this.tournamentBracket.currentMatchIndex;
 				const isCompleted = !!match.winner;
 				
-				html += `<div class="match ${isCurrentMatch ? 'current' : ''} ${isCompleted ? 'completed' : ''}">
-						   <div class="match-players">
-							 <span class="${match.winner?.id === match.player1.id ? 'winner' : ''}">${match.player1.alias}</span>
-							 <span class="vs">vs</span>
-							 <span class="${match.winner?.id === match.player2.id ? 'winner' : ''}">${match.player2.alias}</span>
-						   </div>
-						   ${match.winner ? `<div class="match-result">Winner: ${match.winner.alias}</div>` : ''}
-						 </div>`;
+				const matchDiv = document.createElement('div');
+				matchDiv.className = `match ${isCurrentMatch ? 'current' : ''} ${isCompleted ? 'completed' : ''}`;
+				
+				const playersDiv = document.createElement('div');
+				playersDiv.className = 'match-players';
+				
+				const player1Span = document.createElement('span');
+				player1Span.textContent = match.player1.alias;
+				if (match.winner?.id === match.player1.id) {
+					player1Span.className = 'winner';
+				}
+				
+				const vsSpan = document.createElement('span');
+				vsSpan.className = 'vs';
+				vsSpan.textContent = 'vs';
+				
+				const player2Span = document.createElement('span');
+				player2Span.textContent = match.player2.alias;
+				if (match.winner?.id === match.player2.id) {
+					player2Span.className = 'winner';
+				}
+				
+				playersDiv.appendChild(player1Span);
+				playersDiv.appendChild(vsSpan);
+				playersDiv.appendChild(player2Span);
+				matchDiv.appendChild(playersDiv);
+				
+				if (match.winner) {
+					const resultDiv = document.createElement('div');
+					resultDiv.className = 'match-result';
+					resultDiv.textContent = `Winner: ${match.winner.alias}`;
+					matchDiv.appendChild(resultDiv);
+				}
+				
+				matchesDiv.appendChild(matchDiv);
 			});
 			
-			html += '</div></div>';
+			roundDiv.appendChild(matchesDiv);
+			bracketContainer.appendChild(roundDiv);
 		});
 
-		// Show next rounds structure (empty)
+		// Show future rounds structure
 		const totalRounds = Math.ceil(Math.log2(this.registeredPlayers.length));
 		for (let i = this.tournamentBracket.rounds.length; i < totalRounds; i++) {
-			html += `<div class="round future">
-						<h3>Round ${i + 1}</h3>
-						<div class="matches">
-						  <div class="match pending">TBD</div>
-						</div>
-					 </div>`;
+			const futureRoundDiv = document.createElement('div');
+			futureRoundDiv.className = 'round future';
+			
+			const futureTitle = document.createElement('h3');
+			futureTitle.textContent = `Round ${i + 1}`;
+			futureRoundDiv.appendChild(futureTitle);
+			
+			const futureMatches = document.createElement('div');
+			futureMatches.className = 'matches';
+			
+			const pendingMatch = document.createElement('div');
+			pendingMatch.className = 'match pending';
+			pendingMatch.textContent = 'TBD';
+			
+			futureMatches.appendChild(pendingMatch);
+			futureRoundDiv.appendChild(futureMatches);
+			bracketContainer.appendChild(futureRoundDiv);
 		}
 
-		html += '</div>';
+		bracketDiv.appendChild(bracketContainer);
+
+		// Add tournament status
+		this.displayTournamentStatus(bracketDiv);
+		this.updateNextMatchButton();
+	}
+
+	private displayTournamentStatus(parentDiv: HTMLElement): void {
+		const statusDiv = document.createElement('div');
 		
-		// Tournament status
-		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
-		if (currentRound && this.tournamentBracket.currentMatchIndex < currentRound.length) {
-			const nextMatch = currentRound[this.tournamentBracket.currentMatchIndex];
-			html += `<div class="tournament-status">
-					   <h3>Next Match:</h3>
-					   <p>${nextMatch.player1.alias} vs ${nextMatch.player2.alias}</p>
-					 </div>`;
-		} else if (this.isTournamentComplete()) {
+		if (this.isTournamentComplete()) {
 			const winner = this.getTournamentWinner();
-			html += `<div class="tournament-status final">
-					   <h2>🏆 Tournament Winner: ${winner?.alias}! 🏆</h2>
-					   <button onclick="window.app.resetTournament()" class="primary-btn">New Tournament</button>
-					 </div>`;
+			statusDiv.className = 'tournament-status final';
+			
+			const winnerTitle = document.createElement('h2');
+			winnerTitle.textContent = `🏆 Tournament Winner: ${winner?.alias}! 🏆`;
+			statusDiv.appendChild(winnerTitle);
+			
+			const newTournamentBtn = document.createElement('button');
+			newTournamentBtn.className = 'primary-btn';
+			newTournamentBtn.textContent = 'New Tournament';
+			newTournamentBtn.addEventListener('click', () => this.resetTournament());
+			statusDiv.appendChild(newTournamentBtn);
+		} else {
+			const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
+			if (currentRound && this.tournamentBracket.currentMatchIndex < currentRound.length) {
+				const nextMatch = currentRound[this.tournamentBracket.currentMatchIndex];
+				statusDiv.className = 'tournament-status';
+				
+				const nextTitle = document.createElement('h3');
+				nextTitle.textContent = 'Next Match:';
+				statusDiv.appendChild(nextTitle);
+				
+				const matchInfo = document.createElement('p');
+				matchInfo.textContent = `${nextMatch.player1.alias} vs ${nextMatch.player2.alias}`;
+				statusDiv.appendChild(matchInfo);
+			}
 		}
+		
+		if (statusDiv.children.length > 0) {
+			parentDiv.appendChild(statusDiv);
+		}
+	}
 
-		bracketDiv.innerHTML = html;
-
-		// Update next match button
+	private updateNextMatchButton(): void {
 		const nextMatchBtn = document.getElementById('next-match-btn') as HTMLButtonElement;
 		if (nextMatchBtn) {
 			if (this.isTournamentComplete()) {
@@ -243,7 +419,6 @@ class PongTournamentApp {
 
 		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
 		if (!currentRound || this.tournamentBracket.currentMatchIndex >= currentRound.length) {
-			// Move to next round
 			this.advanceToNextRound();
 			return;
 		}
@@ -262,7 +437,6 @@ class PongTournamentApp {
 			.map(match => match.winner!);
 
 		if (winners.length <= 1) {
-			// Tournament complete
 			this.displayBracket();
 			return;
 		}
@@ -274,7 +448,7 @@ class PongTournamentApp {
 				nextRound.push({
 					player1: winners[i],
 					player2: winners[i + 1],
-					matchId: `round-${this.tournamentBracket.currentRound + 1}-match-${i/2}`,
+					matchId: `round-${this.tournamentBracket.currentRound + 1}-match-${Math.floor(i/2)}`,
 					round: this.tournamentBracket.currentRound + 1
 				});
 			}
@@ -296,11 +470,7 @@ class PongTournamentApp {
 		const completedMatches = currentRound.filter(match => match.winner).length;
 		const isCurrentRoundComplete = completedMatches === currentRound.length;
 		
-		if (isCurrentRoundComplete && currentRound.length === 1) {
-			return true; // Final match completed
-		}
-		
-		return false;
+		return isCurrentRoundComplete && currentRound.length === 1;
 	}
 
 	private getTournamentWinner(): PlayerInfo | null {
@@ -329,8 +499,12 @@ class PongTournamentApp {
 	}
 
 	private startPongGame(player1: PlayerInfo, player2: PlayerInfo): void {
-		document.getElementById('player1-name')!.textContent = player1.alias;
-		document.getElementById('player2-name')!.textContent = player2.alias;
+		const player1Name = document.getElementById('player1-name');
+		const player2Name = document.getElementById('player2-name');
+		
+		if (player1Name) player1Name.textContent = player1.alias;
+		if (player2Name) player2Name.textContent = player2.alias;
+		
 		this.showScreen('game-arena');
 		
 		const pongGame = new PongGameEngine();
@@ -341,25 +515,25 @@ class PongTournamentApp {
 	}
 
 	private handleGameResult(winnerIndex: number): void {
-		if (this.currentMatch) {
-			const winner = winnerIndex === 1 ? this.currentMatch.player1 : this.currentMatch.player2;
-			
-			// Update tournament match
-			const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
-			if (currentRound) {
-				const matchIndex = this.tournamentBracket.currentMatchIndex;
-				if (currentRound[matchIndex]) {
-					currentRound[matchIndex].winner = winner;
-					this.tournamentBracket.currentMatchIndex++;
-				}
-				
-				this.showScreen('tournament-bracket');
-				this.displayBracket();
-			} else {
-				// Quick game
-				alert(`${winner.alias} wins the game!`);
-				this.showScreen('welcome-screen');
+		if (!this.currentMatch) return;
+
+		const winner = winnerIndex === 1 ? this.currentMatch.player1 : this.currentMatch.player2;
+		
+		// Update tournament match
+		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
+		if (currentRound && currentRound.length > 0) {
+			const matchIndex = this.tournamentBracket.currentMatchIndex;
+			if (currentRound[matchIndex]) {
+				currentRound[matchIndex].winner = winner;
+				this.tournamentBracket.currentMatchIndex++;
 			}
+			
+			this.showScreen('tournament-bracket');
+			this.displayBracket();
+		} else {
+			// Quick game
+			this.showError(`${winner.alias} wins the game!`);
+			this.showScreen('welcome-screen');
 		}
 	}
 }
@@ -376,10 +550,23 @@ class PongGameEngine {
 	};
 	
 	public onGameComplete?: (winner: number) => void;
+	private keyHandlers: { keyDown: (e: KeyboardEvent) => void; keyUp: (e: KeyboardEvent) => void } | null = null;
+	private paddleInterval: number | null = null;
 
 	initialize(): void {
 		this.canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
-		this.ctx = this.canvas.getContext('2d')!;
+		if (!this.canvas) {
+			console.error('Canvas element not found');
+			return;
+		}
+		
+		const context = this.canvas.getContext('2d');
+		if (!context) {
+			console.error('Cannot get 2D context');
+			return;
+		}
+		
+		this.ctx = context;
 		this.setupControls();
 		this.gameState.gameRunning = true;
 		this.resetGame();
@@ -395,27 +582,40 @@ class PongGameEngine {
 		const keysPressed: { [key: string]: boolean } = {};
 		
 		const keyDownHandler = (e: KeyboardEvent) => {
-			keysPressed[e.key.toLowerCase()] = true;
-			e.preventDefault();
+			const key = e.key.toLowerCase();
+			// Only handle game keys to prevent conflicts
+			if (['w', 's', 'arrowup', 'arrowdown'].includes(key)) {
+				keysPressed[key] = true;
+				e.preventDefault();
+			}
 		};
 		
 		const keyUpHandler = (e: KeyboardEvent) => {
-			keysPressed[e.key.toLowerCase()] = false;
-			e.preventDefault();
+			const key = e.key.toLowerCase();
+			if (['w', 's', 'arrowup', 'arrowdown'].includes(key)) {
+				keysPressed[key] = false;
+				e.preventDefault();
+			}
 		};
 
+		// Store handlers for cleanup
+		this.keyHandlers = { keyDown: keyDownHandler, keyUp: keyUpHandler };
+		
 		document.addEventListener('keydown', keyDownHandler);
 		document.addEventListener('keyup', keyUpHandler);
 
 		const updatePaddles = () => {
 			if (!this.gameState.gameRunning) return;
 			
+			// Player 1 controls (W/S)
 			if (keysPressed['w'] && this.gameState.paddle1.y > 0) {
 				this.gameState.paddle1.y -= this.gameState.paddle1.speed;
 			}
 			if (keysPressed['s'] && this.gameState.paddle1.y < this.canvas.height - this.gameState.paddle1.height) {
 				this.gameState.paddle1.y += this.gameState.paddle1.speed;
 			}
+			
+			// Player 2 controls (Arrow keys)
 			if (keysPressed['arrowup'] && this.gameState.paddle2.y > 0) {
 				this.gameState.paddle2.y -= this.gameState.paddle2.speed;
 			}
@@ -424,19 +624,33 @@ class PongGameEngine {
 			}
 		};
 
-		const paddleInterval = setInterval(() => {
+		this.paddleInterval = window.setInterval(() => {
 			if (this.gameState.gameRunning) {
 				updatePaddles();
 			} else {
-				clearInterval(paddleInterval);
-				document.removeEventListener('keydown', keyDownHandler);
-				document.removeEventListener('keyup', keyUpHandler);
+				this.cleanup();
 			}
 		}, 16);
 	}
 
+	private cleanup(): void {
+		if (this.paddleInterval) {
+			clearInterval(this.paddleInterval);
+			this.paddleInterval = null;
+		}
+		
+		if (this.keyHandlers) {
+			document.removeEventListener('keydown', this.keyHandlers.keyDown);
+			document.removeEventListener('keyup', this.keyHandlers.keyUp);
+			this.keyHandlers = null;
+		}
+	}
+
 	private gameLoop(): void {
-		if (!this.gameState.gameRunning) return;
+		if (!this.gameState.gameRunning) {
+			this.cleanup();
+			return;
+		}
 
 		this.updateBall();
 		this.draw();
@@ -450,7 +664,7 @@ class PongGameEngine {
 		ball.x += ball.dx;
 		ball.y += ball.dy;
 
-		// Wall collision
+		// Wall collision (top and bottom)
 		if (ball.y <= ball.size || ball.y >= this.canvas.height - ball.size) {
 			ball.dy = -ball.dy;
 		}
@@ -475,10 +689,19 @@ class PongGameEngine {
 		const p1 = this.gameState.paddle1;
 		const p2 = this.gameState.paddle2;
 
-		return (ball.x - ball.size <= p1.x + p1.width && 
-				ball.y >= p1.y && ball.y <= p1.y + p1.height && ball.dx < 0) ||
-			   (ball.x + ball.size >= p2.x && 
-				ball.y >= p2.y && ball.y <= p2.y + p2.height && ball.dx > 0);
+		// Left paddle collision
+		const leftPaddleCollision = ball.x - ball.size <= p1.x + p1.width && 
+								  ball.y >= p1.y && 
+								  ball.y <= p1.y + p1.height && 
+								  ball.dx < 0;
+
+		// Right paddle collision
+		const rightPaddleCollision = ball.x + ball.size >= p2.x && 
+								   ball.y >= p2.y && 
+								   ball.y <= p2.y + p2.height && 
+								   ball.dx > 0;
+
+		return leftPaddleCollision || rightPaddleCollision;
 	}
 
 	private resetBall(): void {
@@ -515,8 +738,10 @@ class PongGameEngine {
 		this.ctx.fill();
 
 		// Update score display
-		document.getElementById('game-score')!.textContent = 
-			`${this.gameState.score.player1} - ${this.gameState.score.player2}`;
+		const scoreElement = document.getElementById('game-score');
+		if (scoreElement) {
+			scoreElement.textContent = `${this.gameState.score.player1} - ${this.gameState.score.player2}`;
+		}
 	}
 
 	private checkScore(): void {
@@ -534,5 +759,5 @@ class PongGameEngine {
 let app: PongTournamentApp;
 document.addEventListener('DOMContentLoaded', () => {
 	app = new PongTournamentApp();
-	(window as any).app = app; // Make it globally accessible
+	(window as any).app = app; // Make it globally accessible for remove buttons
 });
