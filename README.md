@@ -9,15 +9,15 @@ A modern web-based Pong tournament application built with TypeScript and Docker.
 git clone <your-repo>
 cd ft_transcendence
 
-# Setup environment
+# Setup (build images and start)
 make setup
 
-# Build and run
+# Start the application (detached)
 make up
 
-# Or use the startup script
-chmod +x start.sh
-./start.sh
+# Development (hot-reload / bind-mounts)
+# note: dev stack exposes http://localhost:18081 by default
+make dev-up
 ```
 
 ## 🎮 Features

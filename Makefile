@@ -35,30 +35,43 @@ start: ## Quick start with checks
 # Build targets
 build: ## Build Docker images
 	@echo "$(BLUE)Building Docker images...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) build --no-cache
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) build --no-cache
 	@echo "$(GREEN)Build completed!$(NC)"
 
 up: ## Start the application
 	@echo "$(BLUE)Starting ft_transcendence application...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up -d
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up -d
 	@echo "$(GREEN)Application started! Available at: http://localhost:8080$(NC)"
 
 down: ## Stop the application
 	@echo "$(BLUE)Stopping ft_transcendence application...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down
 	@echo "$(GREEN)Application stopped!$(NC)"
 
 dev: ## Start in development mode with logs
 	@echo "$(BLUE)Starting in development mode...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up --build
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up --build
+
+dev-up: ## Start development stack (dev compose) with cleanup
+	@echo "$(BLUE)Starting development stack (dev compose)...$(NC)"
+	@docker compose -p $(PROJECT_NAME)_dev -f docker-compose.dev.yml down --remove-orphans 2>/dev/null || true
+	@docker compose -p $(PROJECT_NAME)_dev -f docker-compose.dev.yml up --build
+
+dev-down: ## Stop development stack (dev compose)
+	@echo "$(BLUE)Stopping development stack...$(NC)"
+	@docker compose -p $(PROJECT_NAME)_dev -f docker-compose.dev.yml down
+
+dev-logs: ## Follow development stack logs
+	@echo "$(BLUE)Following development logs...$(NC)"
+	@docker compose -p $(PROJECT_NAME)_dev -f docker-compose.dev.yml logs -f
 
 logs: ## Show application logs
 	@echo "$(BLUE)Showing logs (Ctrl+C to exit)...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) logs -f
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) logs -f
 
 clean: ## Remove containers and images
 	@echo "$(YELLOW)Cleaning containers...$(NC)"
-	docker-compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down --remove-orphans
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down --remove-orphans
 	docker images | grep $(PROJECT_NAME) | awk '{print $$3}' | xargs -r docker rmi -f
 	@echo "$(GREEN)Clean completed!$(NC)"
 
