@@ -11,6 +11,8 @@ body {
     min-height: 100vh;
 }
 
+#app-container { position: relative; }
+
 #app-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -239,3 +241,130 @@ body {
     margin: 2rem 0;
     min-height: 300px;
 }
+
+/* Settings panel styles */
+.settings-btn {
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+}
+
+
+#settings-panel.screen-settings {
+    position: fixed;
+    right: 20px;
+    top: 80px;
+    width: 380px; /* increased to fit buttons */
+    max-width: calc(100% - 40px);
+    background: rgba(0,0,0,0.9);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    z-index: 1200;
+    padding: 20px;
+    display: none;
+}
+
+#settings-panel.screen-settings .settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#settings-panel.screen-settings .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#settings-panel.screen-settings .settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap; /* allow buttons to wrap on small widths */
+}
+
+/* Ensure buttons don't overflow the panel */
+#settings-panel.screen-settings .settings-actions button {
+    min-width: 80px;
+}
+
+#settings-panel.screen-settings.active {
+    display: block;
+}
+
+/* small responsive tweak for settings on narrow screens */
+@media (max-width: 480px) {
+    #settings-panel.screen-settings {
+        left: 12px;
+        right: 12px;
+        top: auto;
+        bottom: 12px;
+        width: auto;
+    }
+}
+
+/* Toast notification */
+.app-toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    bottom: 24px;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 2000;
+}
+.app-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Stats table */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+.stats-table th, .stats-table td {
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    text-align: left;
+    font-size: 0.9rem;
+}
+.stats-table th {
+    background: rgba(255,255,255,0.03);
+}
+
+/* Power-up label under player name */
+.player-powerup {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #ffd54f;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    transform: translateY(-4px);
+}
+.player-powerup.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Side indicators (fixed, do not shift layout) */
+.player-powerup.side {
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 6px;
+    color: #ffd54f;
+    font-weight: 600;
+    z-index: 1500;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.player-powerup.side.active { opacity: 1; transform: translateY(0); }
