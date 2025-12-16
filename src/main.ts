@@ -35,6 +35,86 @@ const DEFAULT_SETTINGS: GameSettings = {
 	simpleMode: false
 };
 
+// ============= AUTH SERVICE (INLINE) =============
+const API_BASE_URL = 'http://localhost:3000/api';
+
+class AuthService {
+	private static TOKEN_KEY = 'pong_auth_token';
+	private static USER_KEY = 'pong_current_user';
+
+	static async signup(email: string, username: string, password: string) {
+		const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ email, username, password })
+		});
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.error || 'Signup failed');
+		}
+		const data = await response.json();
+		this.saveToken(data.token);
+		this.saveUser(data.user);
+		return data;
+	}
+
+	static async login(email: string, password: string) {
+		const response = await fetch(`${API_BASE_URL}/auth/login`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ email, password })
+		});
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.error || 'Login failed');
+		}
+		const data = await response.json();
+		this.saveToken(data.token);
+		this.saveUser(data.user);
+		return data;
+	}
+
+	static async logout() {
+		localStorage.removeItem(this.TOKEN_KEY);
+		localStorage.removeItem(this.USER_KEY);
+	}
+
+	static getToken(): string | null {
+		return localStorage.getItem(this.TOKEN_KEY);
+	}
+
+	static getUser(): any {
+		const user = localStorage.getItem(this.USER_KEY);
+		return user ? JSON.parse(user) : null;
+	}
+
+	static isAuthenticated(): boolean {
+		return !!this.getToken() && !!this.getUser();
+	}
+
+	private static saveToken(token: string) {
+		localStorage.setItem(this.TOKEN_KEY, token);
+	}
+
+	private static saveUser(user: any) {
+		localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+	}
+}
+
+// Global toggle function for auth forms
+(window as any).toggleAuthForm = () => {
+	const loginForm = document.getElementById('login-form');
+	const signupForm = document.getElementById('signup-form');
+	if (loginForm && signupForm) {
+		loginForm.classList.toggle('active');
+		signupForm.classList.toggle('active');
+		const loginError = document.getElementById('login-error');
+		const signupError = document.getElementById('signup-error');
+		if (loginError) loginError.classList.remove('show');
+		if (signupError) signupError.classList.remove('show');
+	}
+};
+
 class PongTournamentApp {
 	private registeredPlayers: PlayerInfo[] = [];
 	private currentScreen: string = 'welcome-screen';
@@ -47,15 +127,34 @@ class PongTournamentApp {
 	private activeGame: PongGameEngine | null = null;
 
 	constructor() {
+		// Auth gate: decide initial screen based on token
+		const isAuthed = AuthService.isAuthenticated();
 		this.initializeEventListeners();
 		this.initializeRouter();
-		
-		// Handle initial load from URL hash
-		const initialScreen = window.location.hash.slice(1) || 'welcome-screen';
-		this.showScreen(initialScreen, false);
+		if (isAuthed) {
+			this.updateCurrentUserDisplay();
+			this.showScreen('welcome-screen', false);
+		} else {
+			this.showScreen('auth-screen', false);
+		}
+		this.bindAuthForms();
 	}
 
 	private initializeEventListeners(): void {
+		// Auth: logout button (both welcome-screen and header)
+		const handleLogout = async () => {
+			await AuthService.logout();
+			this.showScreen('auth-screen');
+			this.updateCurrentUserDisplay();
+			// Hide header user info
+			const headerDisplay = document.getElementById('current-user-display-header');
+			const headerLogout = document.getElementById('logout-btn-header');
+			if (headerDisplay) headerDisplay.style.display = 'none';
+			if (headerLogout) headerLogout.style.display = 'none';
+		};
+		
+		document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+		document.getElementById('logout-btn-header')?.addEventListener('click', handleLogout);
 		document.getElementById('start-tournament-btn')?.addEventListener('click', () => {
 			this.showScreen('tournament-setup');
 		});
@@ -122,23 +221,179 @@ class PongTournamentApp {
 		});
 	}
 
+	private bindAuthForms(): void {
+		const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
+		const signupForm = document.getElementById('signup-form') as HTMLFormElement | null;
+		const loginError = document.getElementById('login-error');
+		const signupError = document.getElementById('signup-error');
+
+		if (loginForm) {
+			loginForm.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const email = (document.getElementById('login-email') as HTMLInputElement)?.value || '';
+				const password = (document.getElementById('login-password') as HTMLInputElement)?.value || '';
+				try {
+					await AuthService.login(email, password);
+					this.updateCurrentUserDisplay();
+					this.showScreen('welcome-screen');
+					loginError?.classList.remove('show');
+				} catch (err: any) {
+					if (loginError) {
+						loginError.textContent = err?.message || 'Login failed';
+						loginError.classList.add('show');
+					}
+				}
+			});
+		}
+
+		if (signupForm) {
+			signupForm.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const email = (document.getElementById('signup-email') as HTMLInputElement)?.value || '';
+				const username = (document.getElementById('signup-username') as HTMLInputElement)?.value || '';
+				const password = (document.getElementById('signup-password') as HTMLInputElement)?.value || '';
+				const confirm = (document.getElementById('signup-confirm') as HTMLInputElement)?.value || '';
+				if (password !== confirm) {
+					if (signupError) {
+						signupError.textContent = 'Passwords do not match';
+						signupError.classList.add('show');
+					}
+					return;
+				}
+				try {
+					await AuthService.signup(email, username, password);
+					this.updateCurrentUserDisplay();
+					this.showScreen('welcome-screen');
+					signupError?.classList.remove('show');
+				} catch (err: any) {
+					if (signupError) {
+						signupError.textContent = err?.message || 'Signup failed';
+						signupError.classList.add('show');
+					}
+				}
+			});
+		}
+	}
+
+	private updateCurrentUserDisplay(): void {
+		const el = document.getElementById('current-user-display');
+		const headerDisplay = document.getElementById('current-user-display-header');
+		const headerLogout = document.getElementById('logout-btn-header');
+		
+		const user = AuthService.getUser();
+		if (user) {
+			const username = `Logged in as ${user.username}`;
+			if (el) el.textContent = username;
+			if (headerDisplay) {
+				headerDisplay.textContent = username;
+				headerDisplay.style.display = 'inline';
+			}
+			if (headerLogout) headerLogout.style.display = 'inline-block';
+		} else {
+			if (el) el.textContent = 'Not logged in';
+			if (headerDisplay) headerDisplay.style.display = 'none';
+			if (headerLogout) headerLogout.style.display = 'none';
+		}
+	}
+
 	private initializeRouter(): void {
 		// Handle browser back/forward buttons
 		window.addEventListener('popstate', (e) => {
-			const screen = e.state?.screen || 'welcome-screen';
-			this.showScreen(screen, false);
+			const route = e.state?.route || 'welcome-screen';
+			this.handleRoute(route, false);
+		});
+
+		// Handle footer policy links
+		document.addEventListener('click', (e: Event) => {
+			const target = e.target as HTMLElement;
+			if (target.classList.contains('footer-link')) {
+				const href = target.getAttribute('href');
+				if (href === '#privacy-policy') {
+					e.preventDefault();
+					this.showPolicyPage('privacy-policy');
+				} else if (href === '#terms-of-service') {
+					e.preventDefault();
+					this.showPolicyPage('terms-of-service');
+				}
+			}
 		});
 
 		// Set initial state
 		if (!history.state) {
 			const initialScreen = window.location.hash.slice(1) || 'welcome-screen';
-			history.replaceState({ screen: initialScreen }, this.getScreenTitle(initialScreen), `#${initialScreen}`);
+			history.replaceState({ route: initialScreen }, this.getScreenTitle(initialScreen), `#${initialScreen}`);
 		}
+	}
+
+	private handleRoute(route: string, pushState: boolean = true): void {
+		if (route === 'privacy-policy' || route === 'terms-of-service') {
+			this.showPolicyPage(route);
+		} else {
+			this.showScreen(route, pushState);
+		}
+	}
+
+	private showPolicyPage(policy: 'privacy-policy' | 'terms-of-service'): void {
+		const appContainer = document.getElementById('app-container');
+		if (!appContainer) return;
+
+		const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
+		
+		// Fetch and display the policy page
+		fetch(filename)
+			.then(response => {
+				if (!response.ok) throw new Error(`Failed to load ${filename}`);
+				return response.text();
+			})
+			.then(html => {
+				// Create a temporary container for the policy page
+				const tempDiv = document.createElement('div');
+				tempDiv.innerHTML = html;
+				
+				// Extract the main content
+				const policyContainer = tempDiv.querySelector('.policy-container');
+				if (!policyContainer) throw new Error('Policy content not found');
+
+				// Hide all screens
+				document.querySelectorAll('.screen').forEach(screen => {
+					screen.classList.remove('active');
+				});
+				
+				// Remove settings button
+				const settingsBtn = document.getElementById('settings-btn');
+				if (settingsBtn && settingsBtn.parentElement) {
+					settingsBtn.parentElement.removeChild(settingsBtn);
+				}
+
+				// Create a container for the policy page
+				let policyScreen = document.getElementById(`${policy}-screen`);
+				if (!policyScreen) {
+					policyScreen = document.createElement('div');
+					policyScreen.id = `${policy}-screen`;
+					policyScreen.className = 'screen policy-screen';
+					document.getElementById('content-area')?.appendChild(policyScreen);
+				}
+
+				// Clear and add content
+				policyScreen.innerHTML = '';
+				policyScreen.appendChild(policyContainer.cloneNode(true));
+				policyScreen.classList.add('active');
+
+				// Update browser history
+				const title = policy === 'privacy-policy' ? 'Privacy Policy' : 'Terms of Service';
+				history.pushState({ route: policy }, title, `#${policy}`);
+				document.title = `${title} - Pong Tournament`;
+			})
+			.catch(error => {
+				console.error('Error loading policy page:', error);
+				alert('Failed to load page. Please try again.');
+				this.showScreen('welcome-screen');
+			});
 	}
 
 	private showScreen(screenId: string, pushState: boolean = true): void {
 		// Validate screen ID to prevent XSS
-		const validScreens = ['welcome-screen', 'tournament-setup', 'game-arena', 'tournament-bracket'];
+		const validScreens = ['auth-screen', 'welcome-screen', 'tournament-setup', 'game-arena', 'tournament-bracket', 'stats-screen'];
 		if (!validScreens.includes(screenId)) {
 			screenId = 'welcome-screen';
 		}
@@ -164,7 +419,7 @@ class PongTournamentApp {
 		// Update browser history for SPA navigation
 		if (pushState) {
 			const title = this.getScreenTitle(screenId);
-			history.pushState({ screen: screenId }, title, `#${screenId}`);
+			history.pushState({ route: screenId }, title, `#${screenId}`);
 			document.title = title;
 		}
 	}

@@ -30,7 +30,9 @@ start: ## Quick start with checks
 	@make build
 	@make up
 	@echo "$(GREEN)✅ Application started successfully!$(NC)"
-	@echo "$(CYAN)🌐 Open http://localhost:8080 in your browser$(NC)"
+	@echo "$(CYAN)🌐 Frontend: http://localhost:8080$(NC)"
+	@echo "$(CYAN)🔧 Backend API: http://localhost:3000/api$(NC)"
+	@echo "$(CYAN)📊 Database: PostgreSQL on port 5432$(NC)"
 
 # Build targets
 build: ## Build Docker images
@@ -41,12 +43,26 @@ build: ## Build Docker images
 up: ## Start the application
 	@echo "$(BLUE)Starting ft_transcendence application...$(NC)"
 	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up -d
-	@echo "$(GREEN)Application started! Available at: http://localhost:8080$(NC)"
+	@echo "$(GREEN)Application started!$(NC)"
+	@echo "$(CYAN)Waiting for backend to be ready...$(NC)"
+	@sleep 3
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec -T backend npm run migrate 2>/dev/null || true
+	@echo "$(CYAN)🌐 Frontend: http://localhost:8080$(NC)"
+	@echo "$(CYAN)🔧 Backend API: http://localhost:3000/api$(NC)"
 
 down: ## Stop the application
 	@echo "$(BLUE)Stopping ft_transcendence application...$(NC)"
 	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down
 	@echo "$(GREEN)Application stopped!$(NC)"
+
+backend-logs: ## Show backend logs
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) logs -f backend
+
+db-logs: ## Show database logs
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) logs -f db
+
+db-shell: ## Open PostgreSQL shell
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec db psql -U ponguser -d transcendence
 
 dev: ## Start in development mode with logs
 	@echo "$(BLUE)Starting in development mode...$(NC)"

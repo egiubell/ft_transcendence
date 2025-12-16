@@ -1,29 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pong Tournament Championship</title>
-    <link rel="stylesheet" href="styles/app.css">
-    <link rel="stylesheet" href="styles/auth.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
-</head>
-<body>
-    <div id="app-container">
-        <header class="main-header">
-            <h1>Pong Tournament</h1>
-            <nav id="navigation-menu">
-                <span id="current-user-display-header" class="user-display" style="display: none;"></span>
-                <button id="logout-btn-header" class="secondary-btn" title="Logout" style="display: none;">Logout</button>
-                <button id="settings-btn" class="secondary-btn" title="Settings">Settings</button>
-            </nav>
-        </header>
-        
         <main id="content-area">
-            <!-- Auth Screen -->
+            <!-- Auth Screen (Login/Signup) -->
             <div id="auth-screen" class="screen active">
                 <div class="auth-container">
                     <h1 class="auth-title">🏓 Pong Tournament</h1>
+                    
+                    <!-- Login Form -->
                     <form id="login-form" class="auth-form active">
                         <h2>Login</h2>
                         <div class="form-group">
@@ -41,6 +22,7 @@
                         <div id="login-error" class="error-message"></div>
                     </form>
 
+                    <!-- Signup Form -->
                     <form id="signup-form" class="auth-form">
                         <h2>Create Account</h2>
                         <div class="form-group">
@@ -67,17 +49,17 @@
                     </form>
                 </div>
             </div>
-
+            
             <div id="welcome-screen" class="screen">
                 <h2>Welcome to Pong Tournament!</h2>
                 <div class="user-info-bar">
-                    <span id="current-user-display">Not logged in</span>
+                    <span id="current-user-display">Loading...</span>
                     <button id="logout-btn" class="secondary-btn">Logout</button>
                 </div>
                 <button id="start-tournament-btn" class="primary-btn">Start New Tournament</button>
                 <button id="quick-game-btn" class="secondary-btn">Multiplayer Quick Game</button>
                 <button id="single-player-btn" class="secondary-btn">Single Player</button>
-                <button id="stats-btn" class="secondary-btn">Stats</button>
+                <button id="stats-btn" class="secondary-btn">View Stats</button>
             </div>
             
             <div id="tournament-setup" class="screen">
@@ -99,7 +81,7 @@
                 <canvas id="pong-canvas" width="800" height="400"></canvas>
                 <div id="game-controls">
                     <p>Player 1: W/S keys | Player 2: Arrow Up/Down keys</p>
-                        <button id="exit-match-btn" class="secondary-btn">Exit Match</button>
+                    <button id="exit-match-btn" class="secondary-btn">Exit Match</button>
                 </div>
             </div>
             
@@ -110,79 +92,11 @@
             </div>
             
             <div id="stats-screen" class="screen">
-                <h2>Match Statistics (Local)</h2>
+                <h2>Match Statistics</h2>
                 <div id="stats-container">
                     <p>No data yet.</p>
                 </div>
                 <button id="clear-stats" class="secondary-btn">Clear Local Stats</button>
+                <button id="back-to-menu" class="secondary-btn">Back to Menu</button>
             </div>
         </main>
-    </div>
-        <!-- Settings panel -->
-        <div id="settings-panel" class="screen-settings" aria-hidden="true">
-            <div class="settings-content">
-                <h2>Game Settings</h2>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-powerups"> Enable Power-ups</label>
-                </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-attacks"> Enable Attacks</label>
-                </div>
-                <div class="setting-row">
-                    <label for="opt-map">Map</label>
-                    <select id="opt-map">
-                        <option value="classic">Classic</option>
-                        <option value="compact">Compact</option>
-                        <option value="extended">Extended</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label for="opt-ball-speed">Ball speed</label>
-                    <input id="opt-ball-speed" type="range" min="2" max="12" value="5">
-                </div>
-                <div class="setting-row">
-                    <label for="opt-paddle-size">Paddle size</label>
-                    <input id="opt-paddle-size" type="range" min="40" max="200" value="100">
-                </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-simple"> Default (Simple) Mode</label>
-                </div>
-                <div class="settings-actions">
-                    <button id="save-settings" class="primary-btn">Save</button>
-                    <button id="reset-settings" class="secondary-btn">Reset</button>
-                    <button id="close-settings" class="secondary-btn">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <footer class="main-footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Pong Tournament</h3>
-                    <p>A modern multiplayer Pong gaming platform</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Legal</h3>
-                    <ul>
-                        <li><a href="#privacy-policy" class="footer-link">Privacy Policy</a></li>
-                        <li><a href="#terms-of-service" class="footer-link">Terms of Service</a></li>
-                        <li><a href="#contact" class="footer-link">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Links</h3>
-                    <ul>
-                        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                        <li><a href="#help" class="footer-link">Help & Support</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Pong Tournament. All rights reserved.</p>
-            </div>
-        </footer>
-    </div>
-
-    <script type="module" src="main.js"></script>
-</body>
-</html>

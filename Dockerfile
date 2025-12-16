@@ -14,7 +14,10 @@ COPY src/ ./src/
 
 # Compile TypeScript and copy static files
 RUN npm run compile
-RUN cp src/index.html build/ && cp -r src/styles build/
+RUN cp src/index.html build/ && \
+    cp src/privacy-policy.html build/ && \
+    cp src/terms-of-service.html build/ && \
+    cp -r src/styles build/
 
 # Production stage
 FROM nginx:alpine AS runtime-stage

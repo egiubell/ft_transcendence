@@ -5,7 +5,7 @@
   "scripts": {
     "compile": "tsc",
     "build": "npm run compile && npm run copy-assets",
-    "copy-assets": "cp src/index.html build/ && cp -r src/styles build/",
+    "copy-assets": "cp src/index.html src/privacy-policy.html src/terms-of-service.html build/ && cp -r src/styles build/",
     "watch": "tsc --watch",
     "clean-build": "rm -rf build && mkdir -p build",
     "dev": "npm run clean-build && npm run build"
