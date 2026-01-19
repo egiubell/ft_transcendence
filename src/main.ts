@@ -1254,14 +1254,44 @@ class PongGameEngine {
 		
 		this.ctx = context;
 		this.setupControls();
+		this.resizeCanvas();
+		
+		// Handle window resize for responsiveness
+		window.addEventListener('resize', () => {
+			this.resizeCanvas();
+		});
+	}
+
+	private resizeCanvas(): void {
+		// Get container width (max 95% of viewport)
+		const maxWidth = Math.min(window.innerWidth * 0.95, 1000);
+		const aspectRatio = this.getAspectRatio();
+		
 		// Set canvas size based on options map
+		let baseWidth: number;
+		let baseHeight: number;
+		
 		if (this.options.map === 'compact') {
-			this.canvas.width = 640; this.canvas.height = 320;
+			baseWidth = 640;
+			baseHeight = 320;
 		} else if (this.options.map === 'extended') {
-			this.canvas.width = 1000; this.canvas.height = 500;
+			baseWidth = 1000;
+			baseHeight = 500;
 		} else {
-			this.canvas.width = 800; this.canvas.height = 400;
+			baseWidth = 800;
+			baseHeight = 400;
 		}
+		
+		// Scale down if viewport is narrower
+		if (baseWidth > maxWidth) {
+			const scale = maxWidth / baseWidth;
+			this.canvas.width = Math.floor(baseWidth * scale);
+			this.canvas.height = Math.floor(baseHeight * scale);
+		} else {
+			this.canvas.width = baseWidth;
+			this.canvas.height = baseHeight;
+		}
+		
 		// Re-apply paddle heights based on canvas in case sizes changed
 		this.gameState.paddle1.height = this.options.paddleSize;
 		this.gameState.paddle2.height = this.options.paddleSize;
@@ -1277,6 +1307,16 @@ class PongGameEngine {
 		this.removeEffectIndicator('p1');
 		this.removeEffectIndicator('p2');
 		this.stopPowerUpSpawner();
+	}
+
+	private getAspectRatio(): number {
+		if (this.options.map === 'compact') {
+			return 640 / 320;
+		} else if (this.options.map === 'extended') {
+			return 1000 / 500;
+		}
+		return 800 / 400;
+	}
 
 		// Start power-up spawning if enabled
 		if (this.options.powerUps) this.startPowerUpSpawner();

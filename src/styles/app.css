@@ -514,6 +514,165 @@ body {
     background-color: #1e40af;
 }
 
+/* Responsive Design */
+@media (max-width: 1024px) {
+    #app-container {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .main-header h1 {
+        font-size: 2rem;
+    }
+
+    #pong-canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .screen {
+        padding: 1.5rem;
+    }
+
+    .primary-btn, .secondary-btn {
+        padding: 12px 24px;
+        margin: 8px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .main-header {
+        margin-bottom: 1.5rem;
+    }
+
+    #navigation-menu {
+        gap: 10px;
+    }
+
+    #current-user-display-header {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+
+    .screen {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .primary-btn, .secondary-btn {
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    #pong-canvas {
+        margin: 15px auto;
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-width: 2px;
+    }
+
+    .game-info {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .game-info span {
+        font-size: 0.9rem;
+        flex: 1 1 100%;
+    }
+
+    #registered-players {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .setting-row {
+        flex-direction: column;
+    }
+
+    .setting-row input[type="range"],
+    .setting-row select {
+        width: 100%;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .main-footer {
+        padding: 20px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header h1 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    #app-container {
+        padding: 10px;
+    }
+
+    .screen {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .primary-btn, .secondary-btn {
+        padding: 8px 16px;
+        margin: 4px 0;
+        font-size: 0.9rem;
+    }
+
+    #pong-canvas {
+        margin: 10px 0;
+        border-width: 2px;
+    }
+
+    .game-info span {
+        font-size: 0.8rem;
+    }
+
+    #player-alias {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    .player-item {
+        padding: 8px;
+        margin: 5px 0;
+        font-size: 0.9rem;
+    }
+
+    .settings-content h2 {
+        font-size: 1.3rem;
+    }
+
+    .setting-row label {
+        font-size: 0.9rem;
+    }
+
+    .footer-section h3 {
+        font-size: 1.1rem;
+    }
+
+    .footer-section p,
+    .footer-section ul {
+        font-size: 0.85rem;
+    }
+}
+
 /* Responsive Footer */
 @media (max-width: 768px) {
     .footer-content {
