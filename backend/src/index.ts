@@ -1,14 +1,17 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { initializeDatabase } from './db/init';
 import authRoutes from './routes/auth-new';
 import gameRoutes from './routes/games';
 import userRoutes from './routes/users';
+import { GameServer } from './websocket/gameServer';
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = parseInt(process.env.BACKEND_PORT || '3000', 10);
 const HOST = process.env.BACKEND_HOST || 'localhost';
 
@@ -54,10 +57,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
+// Initialize WebSocket game server
+const gameServer = new GameServer(httpServer);
+console.log('🎮 WebSocket game server initialized');
+
 // Start server
-app.listen(PORT, HOST, () => {
+httpServer.listen(PORT, HOST, () => {
   console.log(`🚀 Backend running on http://${HOST}:${PORT}`);
   console.log(`📝 API available at http://${HOST}:${PORT}/api`);
+  console.log(`🔌 WebSocket ready for multiplayer games`);
 });
 
 export default app;
