@@ -92,12 +92,17 @@ class AuthService {
 		return !!this.getToken() && !!this.getUser();
 	}
 
-	private static saveToken(token: string) {
+	static saveToken(token: string) {
 		localStorage.setItem(this.TOKEN_KEY, token);
 	}
 
-	private static saveUser(user: any) {
+	static saveUser(user: any) {
 		localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+	}
+
+	static setSession(token: string, user: any) {
+		this.saveToken(token);
+		this.saveUser(user);
 	}
 
 	// Verifica il token con il backend
@@ -171,6 +176,32 @@ class PongTournamentApp {
 		
 		document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 		document.getElementById('logout-btn-header')?.addEventListener('click', handleLogout);
+
+		const googleBtn = document.getElementById('google-login-btn') as HTMLButtonElement | null;
+		if (googleBtn) {
+			googleBtn.addEventListener('click', async () => {
+				googleBtn.disabled = true;
+				googleBtn.textContent = 'Connessione a Google...';
+				try {
+					const resp = await fetch('http://localhost:3000/api/auth/google/url');
+					if (!resp.ok) {
+						const msg = await resp.text();
+						throw new Error(`Backend ha risposto ${resp.status}: ${msg}`);
+					}
+					const data = await resp.json();
+					if (data.url) {
+						window.location.href = data.url;
+					} else {
+						throw new Error('Nessun URL Google ricevuto');
+					}
+				} catch (e: any) {
+					console.error('Google OAuth init failed', e);
+					alert(`Errore avvio Google OAuth: ${e?.message || e}`);
+					googleBtn.disabled = false;
+					googleBtn.textContent = 'Continua con Google';
+				}
+			});
+		}
 		document.getElementById('start-tournament-btn')?.addEventListener('click', () => {
 			this.showScreen('tournament-setup');
 		});
@@ -442,7 +473,6 @@ class PongTournamentApp {
 
 					const token = AuthService.getToken();
 					const user = AuthService.getUser();
-					console.log('[Signup] successo', { user, tokenLen: token?.length });
 					// Hide all screens
 					document.querySelectorAll('.screen').forEach(screen => {
 						screen.classList.remove('active');
@@ -1656,9 +1686,29 @@ class PongGameEngine {
 	}
 }
 
+function consumeGoogleLoginFromHash(): void {
+	const hash = window.location.hash || '';
+	if (!hash.includes('google_token=')) return;
+	const params = new URLSearchParams(hash.replace(/^#/, ''));
+	const token = params.get('google_token');
+	const userEncoded = params.get('google_user');
+	if (token && userEncoded) {
+		try {
+			const userJson = atob(userEncoded);
+			const user = JSON.parse(userJson);
+			AuthService.setSession(token, user);
+			// Puliamo l'hash per evitare ricarichi indesiderati
+			history.replaceState({}, document.title, '#welcome-screen');
+		} catch (e) {
+			console.error('Errore nel parsing dei dati Google', e);
+		}
+	}
+}
+
 // Initialize application
 let app: PongTournamentApp;
 document.addEventListener('DOMContentLoaded', () => {
+	consumeGoogleLoginFromHash();
 	app = new PongTournamentApp();
 	(window as any).app = app; // Make it globally accessible for remove buttons
 });
