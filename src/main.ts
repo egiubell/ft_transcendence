@@ -164,6 +164,10 @@ class PongTournamentApp {
 	private remoteOpponent: string | null = null;
 	private remoteRoomId: string | null = null;
 	private remoteEngine: PongGameEngine | null = null;
+	private chatPanel: HTMLElement | null = null;
+	private chatLogEl: HTMLElement | null = null;
+	private chatInputEl: HTMLInputElement | null = null;
+	private chatSendBtn: HTMLButtonElement | null = null;
 
 	constructor() {
 		// Auth gate: decide initial screen based on token
@@ -172,6 +176,7 @@ class PongTournamentApp {
 		this.setupSocket();
 		this.initializeRouter();
 		this.onlineStatusEl = document.getElementById('online-status');
+		this.initializeChatUI();
 		if (isAuthed) {
 			this.updateCurrentUserDisplay();
 			this.showScreen('welcome-screen', false);
@@ -209,6 +214,10 @@ class PongTournamentApp {
 		this.socket.on('game-over', (data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }) => {
 			this.handleRemoteOver(data);
 		});
+
+		this.socket.on('chat-message', (data: { from: string; message: string; ts: number }) => {
+			this.handleIncomingChat(data);
+		});
 	}
 
 	private updateOnlineStatus(message: string): void {
@@ -231,6 +240,8 @@ class PongTournamentApp {
 		this.remoteOpponent = data.opponent;
 		this.remoteRoomId = data.roomId;
 		this.updateOnlineStatus(`Match vs ${data.opponent}`);
+		this.showChatPanel(true);
+		this.clearChatLog();
 
 		const engine = new PongGameEngine();
 		this.remoteEngine = engine;
@@ -273,10 +284,61 @@ class PongTournamentApp {
 		this.remoteRoomId = null;
 		this.remoteOpponent = null;
 		this.remotePlayerIndex = null;
+		this.showChatPanel(false);
 		this.updateOnlineStatus('Match finished');
 		const msg = data.reason === 'forfeit' ? 'Opponent left the match' : `Winner: Player ${data.winner}`;
 		alert(`Game over: ${msg}`);
 		this.showScreen('welcome-screen');
+	}
+
+	private initializeChatUI(): void {
+		this.chatPanel = document.getElementById('chat-panel');
+		this.chatLogEl = document.getElementById('chat-log');
+		this.chatInputEl = document.getElementById('chat-input') as HTMLInputElement | null;
+		this.chatSendBtn = document.getElementById('chat-send') as HTMLButtonElement | null;
+
+		const sendHandler = () => this.sendChatMessage();
+		if (this.chatSendBtn) this.chatSendBtn.addEventListener('click', sendHandler);
+		if (this.chatInputEl) {
+			this.chatInputEl.addEventListener('keypress', (e) => {
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					sendHandler();
+				}
+			});
+		}
+	}
+
+	private showChatPanel(show: boolean): void {
+		if (!this.chatPanel) return;
+		this.chatPanel.style.display = show ? 'block' : 'none';
+	}
+
+	private clearChatLog(): void {
+		if (this.chatLogEl) this.chatLogEl.innerHTML = '';
+	}
+
+	private appendChatMessage(from: string, message: string, ts?: number, own: boolean = false): void {
+		if (!this.chatLogEl) return;
+		const line = document.createElement('div');
+		line.className = `chat-line${own ? ' own' : ''}`;
+		const time = ts ? new Date(ts) : new Date();
+		const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+		line.innerHTML = `<span class="from">${from}</span> <span class="time">(${timeStr})</span>: ${message}`;
+		this.chatLogEl.appendChild(line);
+		this.chatLogEl.scrollTop = this.chatLogEl.scrollHeight;
+	}
+
+	private handleIncomingChat(data: { from: string; message: string; ts: number }): void {
+		this.appendChatMessage(data.from, data.message, data.ts, false);
+	}
+
+	private sendChatMessage(): void {
+		if (!this.socket || !this.remoteRoomId) return;
+		const text = (this.chatInputEl?.value || '').trim();
+		if (!text) return;
+		this.socket.emit('chat-message', { message: text });
+		if (this.chatInputEl) this.chatInputEl.value = '';
 	}
 
 	private initializeEventListeners(): void {
@@ -1230,6 +1292,7 @@ class PongTournamentApp {
 			this.remoteEngine = null;
 			this.updateOnlineStatus('Left match');
 		}
+		this.showChatPanel(false);
 		// Re-enable settings and show menu
 		document.getElementById('settings-btn')?.removeAttribute('disabled');
 		this.showScreen('welcome-screen');

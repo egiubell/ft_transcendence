@@ -60,6 +60,10 @@ export class GameServer {
         this.handlePaddleMove(socket, data.y);
       });
 
+      socket.on('chat-message', (data: { message: string }) => {
+        this.handleChatMessage(socket, data.message);
+      });
+
       socket.on('leave-game', () => {
         this.handleLeaveGame(socket);
       });
@@ -172,6 +176,25 @@ export class GameServer {
 
     // Update paddle position (with bounds check)
     room.players[playerIndex].paddleY = Math.max(0, Math.min(room.canvasHeight - 100, y));
+  }
+
+  private handleChatMessage(socket: Socket, message: string): void {
+    const roomId = this.playerToRoom.get(socket.id);
+    if (!roomId) return;
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+
+    const text = (message || '').toString().trim().slice(0, 300);
+    if (!text) return;
+
+    const player = room.players.find(p => p.socketId === socket.id);
+    const from = player?.username || 'Player';
+
+    this.io.to(roomId).emit('chat-message', {
+      from,
+      message: text,
+      ts: Date.now()
+    });
   }
 
   private handleLeaveGame(socket: Socket): void {
