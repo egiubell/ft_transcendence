@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles/app.css?v=dev1">
     <link rel="stylesheet" href="styles/auth.css?v=dev1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.js"></script>
 </head>
 <body>
     <div id="app-container">
@@ -16,6 +17,7 @@
             <nav id="navigation-menu">
                 <span id="current-user-display-header" class="user-display" style="display: none;"></span>
                 <button id="logout-btn-header" class="secondary-btn" title="Logout" style="display: none;">Logout</button>
+                <span id="online-status" class="status-pill" style="display:none;">Offline</span>
                 <button id="settings-btn" class="secondary-btn" title="Settings">Settings</button>
             </nav>
         </header>

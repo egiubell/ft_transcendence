@@ -32,9 +32,8 @@ body {
 
 #navigation-menu {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
@@ -48,6 +47,15 @@ body {
 
 #logout-btn-header {
     display: none;
+}
+
+.status-pill {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.25);
 }
 
 .screen {

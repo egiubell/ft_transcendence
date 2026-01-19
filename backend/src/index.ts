@@ -17,7 +17,7 @@ const HOST = process.env.BACKEND_HOST || 'localhost';
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+  origin: (_origin, callback) => callback(null, true), // allow all origins (works for LAN/ngrok)
   credentials: true
 }));
 app.use(express.json());

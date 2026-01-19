@@ -1,3 +1,7 @@
+// socket.io-client loaded via CDN <script> tag
+declare const io: any;
+type Socket = any;
+
 interface PlayerInfo {
 	alias: string;
 	id: string;
@@ -26,6 +30,12 @@ interface GameSettings {
 	simpleMode: boolean;
 }
 
+interface RemoteGameState {
+	ball: { x: number; y: number; dx: number; dy: number };
+	paddles: Array<{ y: number }>;
+	score: { player1: number; player2: number };
+}
+
 const DEFAULT_SETTINGS: GameSettings = {
 	powerUps: false,
 	attacks: false,
@@ -36,7 +46,8 @@ const DEFAULT_SETTINGS: GameSettings = {
 };
 
 // ============= AUTH SERVICE (INLINE) =============
-const API_BASE_URL = 'http://localhost:3000/api';
+// Compute API base from current origin so frontend and backend stay same-origin (works with nginx/ngrok)
+const API_BASE_URL = `${window.location.origin}/api`;
 
 class AuthService {
 	private static TOKEN_KEY = 'pong_auth_token';
@@ -57,6 +68,7 @@ class AuthService {
 		this.saveUser(data.user);
 		return data;
 	}
+
 
 	static async login(email: string, password: string) {
 		const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -146,12 +158,20 @@ class PongTournamentApp {
 	};
 	private currentMatch: GameMatch | null = null;
 	private activeGame: PongGameEngine | null = null;
+	private socket: Socket | null = null;
+	private onlineStatusEl: HTMLElement | null = null;
+	private remotePlayerIndex: 0 | 1 | null = null;
+	private remoteOpponent: string | null = null;
+	private remoteRoomId: string | null = null;
+	private remoteEngine: PongGameEngine | null = null;
 
 	constructor() {
 		// Auth gate: decide initial screen based on token
 		const isAuthed = AuthService.isAuthenticated();
 		this.initializeEventListeners();
+		this.setupSocket();
 		this.initializeRouter();
+		this.onlineStatusEl = document.getElementById('online-status');
 		if (isAuthed) {
 			this.updateCurrentUserDisplay();
 			this.showScreen('welcome-screen', false);
@@ -159,6 +179,104 @@ class PongTournamentApp {
 			this.showScreen('auth-screen', false);
 		}
 		this.bindAuthForms();
+	}
+
+	private setupSocket(): void {
+		if (this.socket) return;
+		const SOCKET_URL = window.location.origin;
+		this.socket = io(SOCKET_URL, { transports: ['websocket'] });
+
+		this.socket.on('connect', () => {
+			this.updateOnlineStatus('Connected to multiplayer');
+		});
+
+		this.socket.on('disconnect', () => {
+			this.updateOnlineStatus('Disconnected');
+		});
+
+		this.socket.on('queue-joined', (data: { position: number }) => {
+			this.updateOnlineStatus(`In queue... (#${data.position})`);
+		});
+
+		this.socket.on('game-start', (data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number }) => {
+			this.handleRemoteStart(data);
+		});
+
+		this.socket.on('game-update', (data: RemoteGameState) => {
+			this.handleRemoteUpdate(data);
+		});
+
+		this.socket.on('game-over', (data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }) => {
+			this.handleRemoteOver(data);
+		});
+	}
+
+	private updateOnlineStatus(message: string): void {
+		if (!this.onlineStatusEl) return;
+		this.onlineStatusEl.textContent = message;
+		this.onlineStatusEl.style.display = 'block';
+	}
+
+	private startOnlineMultiplayer(): void {
+		if (!this.socket) this.setupSocket();
+		const user = AuthService.getUser();
+		const username = user?.username || user?.email?.split('@')[0] || 'Player';
+		this.updateOnlineStatus('Connecting...');
+		this.socket?.emit('join-queue', { username });
+		this.showScreen('welcome-screen');
+	}
+
+	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number }): void {
+		this.remotePlayerIndex = data.playerNumber === 1 ? 0 : 1;
+		this.remoteOpponent = data.opponent;
+		this.remoteRoomId = data.roomId;
+		this.updateOnlineStatus(`Match vs ${data.opponent}`);
+
+		const engine = new PongGameEngine();
+		this.remoteEngine = engine;
+		this.activeGame = engine;
+		const settings = this.loadSettings();
+		engine.applySettings(settings);
+		engine.enableRemoteMode(this.remotePlayerIndex, (y: number) => {
+			this.socket?.emit('paddle-move', { y });
+		});
+		engine.initialize();
+		engine.setCanvasSize(data.canvasWidth, data.canvasHeight);
+		engine.play();
+
+		this.showScreen('game-arena');
+	}
+
+	private handleRemoteUpdate(data: RemoteGameState): void {
+		if (!this.remoteEngine) return;
+		this.remoteEngine.applyRemoteState(data);
+	}
+
+	private handleRemoteOver(data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }): void {
+		if (this.remoteEngine) {
+			this.remoteEngine.stop();
+			this.remoteEngine = null;
+		}
+		this.activeGame = null;
+		const winnerName = data.winner === 1 ? this.remoteOpponent : (AuthService.getUser()?.username || 'You');
+		const score = `${data.finalScore.player1} - ${data.finalScore.player2}`;
+		
+		// Save match result to stats
+		this.saveMatchResult({
+			date: new Date().toISOString(),
+			player1: this.remotePlayerIndex === 0 ? (AuthService.getUser()?.username || 'You') : (this.remoteOpponent || 'Opponent'),
+			player2: this.remotePlayerIndex === 1 ? (AuthService.getUser()?.username || 'You') : (this.remoteOpponent || 'Opponent'),
+			winner: winnerName,
+			score: score
+		});
+
+		this.remoteRoomId = null;
+		this.remoteOpponent = null;
+		this.remotePlayerIndex = null;
+		this.updateOnlineStatus('Match finished');
+		const msg = data.reason === 'forfeit' ? 'Opponent left the match' : `Winner: Player ${data.winner}`;
+		alert(`Game over: ${msg}`);
+		this.showScreen('welcome-screen');
 	}
 
 	private initializeEventListeners(): void {
@@ -207,7 +325,7 @@ class PongTournamentApp {
 		});
 
 		document.getElementById('quick-game-btn')?.addEventListener('click', () => {
-			this.startQuickGame();
+			this.startOnlineMultiplayer();
 		});
 
 		document.getElementById('add-player-btn')?.addEventListener('click', () => {
@@ -1104,6 +1222,14 @@ class PongTournamentApp {
 			}
 			this.activeGame = null;
 		}
+		if (this.socket && this.remoteRoomId) {
+			this.socket.emit('leave-game');
+			this.remoteRoomId = null;
+			this.remoteOpponent = null;
+			this.remotePlayerIndex = null;
+			this.remoteEngine = null;
+			this.updateOnlineStatus('Left match');
+		}
 		// Re-enable settings and show menu
 		document.getElementById('settings-btn')?.removeAttribute('disabled');
 		this.showScreen('welcome-screen');
@@ -1193,6 +1319,9 @@ class PongGameEngine {
 		score: { player1: 0, player2: 0 },
 		gameRunning: false
 	};
+	private remoteMode: boolean = false;
+	private remotePlayerIndex: 0 | 1 | null = null;
+	private onRemoteMove?: (y: number) => void;
 	
 	public onGameComplete?: (winner: number) => void;
 	private options: GameSettings = DEFAULT_SETTINGS;
@@ -1227,6 +1356,29 @@ class PongGameEngine {
 		// Power-ups/attacks are kept in options for future mechanics
 	}
 
+	public setCanvasSize(width: number, height: number): void {
+		if (!this.canvas) return;
+		this.canvas.width = width;
+		this.canvas.height = height;
+		this.gameState.paddle2.x = this.canvas.width - 10 - this.gameState.paddle2.width;
+	}
+
+	public enableRemoteMode(playerIndex: 0 | 1, onMove: (y: number) => void): void {
+		this.remoteMode = true;
+		this.remotePlayerIndex = playerIndex;
+		this.onRemoteMove = onMove;
+	}
+
+	public applyRemoteState(state: RemoteGameState): void {
+		// Update local render state with server snapshot
+		this.gameState.ball.x = state.ball.x;
+		this.gameState.ball.y = state.ball.y;
+		this.gameState.score.player1 = state.score.player1;
+		this.gameState.score.player2 = state.score.player2;
+		if (state.paddles[0]) this.gameState.paddle1.y = state.paddles[0].y;
+		if (state.paddles[1]) this.gameState.paddle2.y = state.paddles[1].y;
+	}
+
 	/** Stop the running game immediately and cleanup resources */
 	public stop(): void {
 		this.gameState.gameRunning = false;
@@ -1238,6 +1390,8 @@ class PongGameEngine {
 		// Remove any active indicators when stopping the game
 		this.removeEffectIndicator('p1');
 		this.removeEffectIndicator('p2');
+		this.remoteMode = false;
+		this.remotePlayerIndex = null;
 	}
 
 	initialize(): void {
@@ -1560,7 +1714,22 @@ class PongGameEngine {
 
 		const updatePaddles = () => {
 			if (!this.gameState.gameRunning) return;
-			
+
+			if (this.remoteMode && this.remotePlayerIndex !== null) {
+				const myPaddle = this.remotePlayerIndex === 0 ? this.gameState.paddle1 : this.gameState.paddle2;
+				const speed = myPaddle.speed;
+				const moveUp = keysPressed['w'] || keysPressed['arrowup'];
+				const moveDown = keysPressed['s'] || keysPressed['arrowdown'];
+				if (moveUp && myPaddle.y > 0) {
+					myPaddle.y = Math.max(0, myPaddle.y - speed);
+				}
+				if (moveDown && myPaddle.y < this.canvas.height - myPaddle.height) {
+					myPaddle.y = Math.min(this.canvas.height - myPaddle.height, myPaddle.y + speed);
+				}
+				this.onRemoteMove?.(myPaddle.y);
+				return; // do not run local physics/AI in remote mode
+			}
+
 			// Player 1 controls (W/S)
 			if (keysPressed['w'] && this.gameState.paddle1.y > 0) {
 				this.gameState.paddle1.y -= this.gameState.paddle1.speed;
@@ -1613,6 +1782,12 @@ class PongGameEngine {
 	private gameLoop(): void {
 		if (!this.gameState.gameRunning) {
 			this.cleanup();
+			return;
+		}
+
+		if (this.remoteMode) {
+			this.draw();
+			requestAnimationFrame(() => this.gameLoop());
 			return;
 		}
 

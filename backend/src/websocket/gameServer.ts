@@ -38,7 +38,7 @@ export class GameServer {
   constructor(httpServer: HTTPServer) {
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+        origin: (_origin, callback) => callback(null, true), // allow all origins for LAN/ngrok tests
         methods: ['GET', 'POST'],
         credentials: true
       }
