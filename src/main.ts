@@ -99,6 +99,22 @@ class AuthService {
 	private static saveUser(user: any) {
 		localStorage.setItem(this.USER_KEY, JSON.stringify(user));
 	}
+
+	// Verifica il token con il backend
+	static async verifyToken(): Promise<boolean> {
+		const token = this.getToken();
+		if (!token) return false;
+		try {
+			const resp = await fetch(`${API_BASE_URL}/auth/verify`, {
+				method: 'GET',
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			return resp.ok;
+		} catch (e) {
+			console.error('Verify token error:', e);
+			return false;
+		}
+	}
 }
 
 // Global toggle function for auth forms
@@ -227,20 +243,56 @@ class PongTournamentApp {
 		const loginError = document.getElementById('login-error');
 		const signupError = document.getElementById('signup-error');
 
+		const showLoginSuccess = (msg: string) => {
+			if (loginError) {
+				loginError.textContent = msg;
+				loginError.classList.add('show', 'success');
+			}
+		};
+
+		const clearLoginError = () => {
+			if (loginError) {
+				loginError.classList.remove('show', 'success');
+				loginError.textContent = '';
+			}
+		};
+
+		const clearSignupError = () => {
+			if (signupError) {
+				signupError.classList.remove('show');
+				signupError.textContent = '';
+			}
+		};
+
+		// Client-side validation helpers
+		const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
+		const isValidUsername = (u: string) => /^[a-zA-Z][a-zA-Z0-9_-]{2,19}$/.test(u);
+		const isStrongPassword = (p: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(p);
+
 		if (loginForm) {
 			loginForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const email = (document.getElementById('login-email') as HTMLInputElement)?.value || '';
 				const password = (document.getElementById('login-password') as HTMLInputElement)?.value || '';
+				clearLoginError();
+				if (!isValidEmail(email)) {
+					if (loginError) {
+						loginError.textContent = 'Invalid email format';
+						loginError.classList.add('show');
+						loginError.classList.remove('success');
+					}
+					return;
+				}
 				try {
 					await AuthService.login(email, password);
 					this.updateCurrentUserDisplay();
 					this.showScreen('welcome-screen');
-					loginError?.classList.remove('show');
+					clearLoginError();
 				} catch (err: any) {
 					if (loginError) {
-						loginError.textContent = err?.message || 'Login failed';
+						loginError.textContent = err?.message || 'Login fallito';
 						loginError.classList.add('show');
+						loginError.classList.remove('success');
 					}
 				}
 			});
@@ -253,6 +305,26 @@ class PongTournamentApp {
 				const username = (document.getElementById('signup-username') as HTMLInputElement)?.value || '';
 				const password = (document.getElementById('signup-password') as HTMLInputElement)?.value || '';
 				const confirm = (document.getElementById('signup-confirm') as HTMLInputElement)?.value || '';
+
+				clearSignupError();
+				clearLoginError();
+
+				if (!isValidEmail(email)) {
+					if (signupError) {
+						signupError.textContent = 'Invalid email format';
+						signupError.classList.add('show');
+					}
+					return;
+				}
+
+				if (!isValidUsername(username)) {
+					if (signupError) {
+						signupError.textContent = 'Invalid username. 3-20 chars, start with a letter, only letters, numbers, _ or -';
+						signupError.classList.add('show');
+					}
+					return;
+				}
+
 				if (password !== confirm) {
 					if (signupError) {
 						signupError.textContent = 'Passwords do not match';
@@ -260,11 +332,24 @@ class PongTournamentApp {
 					}
 					return;
 				}
+
+				if (!isStrongPassword(password)) {
+					if (signupError) {
+						signupError.textContent = 'Weak password. Min 8 chars, include upper, lower and a digit';
+						signupError.classList.add('show');
+					}
+					return;
+				}
+
 				try {
 					await AuthService.signup(email, username, password);
-					this.updateCurrentUserDisplay();
-					this.showScreen('welcome-screen');
-					signupError?.classList.remove('show');
+					clearSignupError();
+					const loginFormEl = document.getElementById('login-form');
+					const signupFormEl = document.getElementById('signup-form');
+					loginFormEl?.classList.add('active');
+					signupFormEl?.classList.remove('active');
+					this.showScreen('auth-screen');
+					showLoginSuccess('Account creato, ora effettua il login');
 				} catch (err: any) {
 					if (signupError) {
 						signupError.textContent = err?.message || 'Signup failed';
@@ -279,7 +364,6 @@ class PongTournamentApp {
 		const el = document.getElementById('current-user-display');
 		const headerDisplay = document.getElementById('current-user-display-header');
 		const headerLogout = document.getElementById('logout-btn-header');
-		
 		const user = AuthService.getUser();
 		if (user) {
 			const username = `Logged in as ${user.username}`;
@@ -295,6 +379,7 @@ class PongTournamentApp {
 			if (headerLogout) headerLogout.style.display = 'none';
 		}
 	}
+
 
 	private initializeRouter(): void {
 		// Handle browser back/forward buttons
@@ -327,39 +412,41 @@ class PongTournamentApp {
 
 	private handleRoute(route: string, pushState: boolean = true): void {
 		if (route === 'privacy-policy' || route === 'terms-of-service') {
-			this.showPolicyPage(route);
+			this.showPolicyPage(route as 'privacy-policy' | 'terms-of-service');
 		} else {
 			this.showScreen(route, pushState);
 		}
 	}
 
-	private showPolicyPage(policy: 'privacy-policy' | 'terms-of-service'): void {
-		const appContainer = document.getElementById('app-container');
-		if (!appContainer) return;
 
-		const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
+		private showPolicyPage(policy: 'privacy-policy' | 'terms-of-service'): void {
+			const appContainer = document.getElementById('app-container');
+			if (!appContainer) return;
+
+			const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
 		
-		// Fetch and display the policy page
-		fetch(filename)
-			.then(response => {
-				if (!response.ok) throw new Error(`Failed to load ${filename}`);
-				return response.text();
-			})
-			.then(html => {
-				// Create a temporary container for the policy page
-				const tempDiv = document.createElement('div');
-				tempDiv.innerHTML = html;
+			// Fetch and display the policy page
+			fetch(filename)
+				.then(response => {
+					if (!response.ok) throw new Error(`Failed to load ${filename}`);
+					return response.text();
+				})
+				.then(html => {
+					// Create a temporary container for the policy page
+					const tempDiv = document.createElement('div');
+					tempDiv.innerHTML = html;
 				
-				// Extract the main content
-				const policyContainer = tempDiv.querySelector('.policy-container');
-				if (!policyContainer) throw new Error('Policy content not found');
+					// Extract the main content
+					const policyContainer = tempDiv.querySelector('.policy-container');
+					if (!policyContainer) throw new Error('Policy content not found');
 
-				// Hide all screens
-				document.querySelectorAll('.screen').forEach(screen => {
-					screen.classList.remove('active');
-				});
-				
-				// Remove settings button
+					const token = AuthService.getToken();
+					const user = AuthService.getUser();
+					console.log('[Signup] successo', { user, tokenLen: token?.length });
+					// Hide all screens
+					document.querySelectorAll('.screen').forEach(screen => {
+						screen.classList.remove('active');
+					});
 				const settingsBtn = document.getElementById('settings-btn');
 				if (settingsBtn && settingsBtn.parentElement) {
 					settingsBtn.parentElement.removeChild(settingsBtn);
@@ -819,11 +906,16 @@ class PongTournamentApp {
 	}
 
 	private startSinglePlayer(): void {
-		// Prompt for player's display name before starting single-player so stats can be saved
-		const name = window.prompt('Enter your name to record stats (Cancel to abort):', 'Player');
-		if (name === null) return; // user cancelled
-		const playerAlias = name.trim() || 'Player';
-		const player: PlayerInfo = { alias: playerAlias, id: '1' };
+		// Usa un alias dal profilo; chiedi nome solo se non loggato o senza alias
+		const user = AuthService.getUser();
+		const userAlias = user?.username || user?.name || (user?.email ? user.email.split('@')[0] : '') || '';
+		let playerAlias = userAlias || 'Player';
+		if (!userAlias) {
+			const name = window.prompt('Inserisci il tuo nome per la modalità single player (Annulla per uscire):', playerAlias);
+			if (name === null) return; // user cancelled
+			playerAlias = name.trim() || 'Player';
+		}
+		const player: PlayerInfo = { alias: playerAlias, id: user ? String(user.id ?? '1') : '1' };
 		const ai: PlayerInfo = { alias: 'AI Bot', id: 'AI' };
 		const match: GameMatch = { player1: player, player2: ai, matchId: 'single-' + Date.now(), round: 0 };
 		this.currentMatch = match;

@@ -64,6 +64,9 @@ db-logs: ## Show database logs
 db-shell: ## Open PostgreSQL shell
 	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec db psql -U ponguser -d transcendence
 
+list-users: ## Show registered users (id, email, username)
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec -T db psql -U ponguser -d transcendence -c "SELECT id, email, username, created_at FROM users ORDER BY id;"
+
 dev: ## Start in development mode with logs
 	@echo "$(BLUE)Starting in development mode...$(NC)"
 	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up --build
@@ -88,8 +91,17 @@ logs: ## Show application logs
 clean: ## Remove containers and images
 	@echo "$(YELLOW)Cleaning containers...$(NC)"
 	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down --remove-orphans
-	docker images | grep $(PROJECT_NAME) | awk '{print $$3}' | xargs -r docker rmi -f
+	# Remove images built with this project prefix (robust against spaces in CREATED column)
+	docker image ls --format '{{.Repository}} {{.ID}}' | awk '/^$(PROJECT_NAME)/ {print $$2}' | xargs -r docker rmi -f
 	@echo "$(GREEN)Clean completed!$(NC)"
+
+db-reset: ## Destroy DB volume and recreate stack (irreversible: drops all data)
+	@echo "$(RED)Destroying database volume and stack (data will be lost)...$(NC)"
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down -v --remove-orphans
+	@echo "$(BLUE)Recreating stack and running migrations...$(NC)"
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up -d --build
+	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec -T backend npm run migrate 2>/dev/null || true
+	@echo "$(GREEN)DB reset completed (fresh schema, empty data).$(NC)"
 
 re: clean build up ## Rebuild everything from scratch
 

@@ -1,7 +1,7 @@
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import pool from '../db/connection';
-import { validateEmail, validatePassword } from '../utils/validation';
+import { validateEmail, validatePassword, validateUsername } from '../utils/validation';
 import { generateToken, authenticateToken, AuthRequest } from '../utils/auth';
 
 const router = Router();
@@ -20,8 +20,12 @@ router.post('/signup', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
+    if (!validateUsername(username)) {
+      return res.status(400).json({ error: 'Invalid username. Use 3-20 chars, start with a letter, only letters, numbers, _ or -' });
+    }
+
     if (!validatePassword(password)) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return res.status(400).json({ error: 'Weak password. Min 8 chars, include upper, lower and a digit' });
     }
 
     // Check if user already exists

@@ -1,10 +1,13 @@
 /* Auth Screen Styles */
 #auth-screen {
-    display: flex !important;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     padding: 20px;
+}
+
+#auth-screen.screen.active {
+    display: flex;
 }
 
 .auth-container {
@@ -30,6 +33,14 @@
 
 .auth-form.active {
     display: block;
+}
+
+#login-error {
+    color: #e74c3c;
+}
+
+#login-error.success {
+    color: #2ecc71;
 }
 
 .auth-form h2 {
