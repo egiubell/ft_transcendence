@@ -37,6 +37,10 @@ app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 
 // Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Pong Tournament Backend API' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });

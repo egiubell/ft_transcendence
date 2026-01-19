@@ -979,6 +979,7 @@ class PongTournamentApp {
 		// enable AI if player2 is AI
 		if (player2.id === 'AI') pongGame.enableAI(true);
 		pongGame.initialize();
+		pongGame.play();
 		pongGame.onGameComplete = (winner: number) => {
 			// Re-enable settings when game ends
 			this.activeGame = null;
@@ -1318,6 +1319,7 @@ class PongGameEngine {
 		return 800 / 400;
 	}
 
+	public play(): void {
 		// Start power-up spawning if enabled
 		if (this.options.powerUps) this.startPowerUpSpawner();
 		// Start AI if enabled
