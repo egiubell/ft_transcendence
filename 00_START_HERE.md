@@ -38,7 +38,7 @@
 make re
 ```
 
-Then access: **https://localhost:8443**
+Then access: **https://localhost:8443** or **http://localhost:8080**
 
 (Accept self-signed certificate warning)
 
