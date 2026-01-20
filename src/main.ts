@@ -163,6 +163,7 @@ class PongTournamentApp {
 	private remotePlayerIndex: 0 | 1 | null = null;
 	private remoteOpponent: string | null = null;
 	private remoteRoomId: string | null = null;
+	private remoteResume: { roomId: string; token: string; playerNumber: number } | null = null;
 	private remoteEngine: PongGameEngine | null = null;
 	private chatPanel: HTMLElement | null = null;
 	private chatLogEl: HTMLElement | null = null;
@@ -193,18 +194,36 @@ class PongTournamentApp {
 
 		this.socket.on('connect', () => {
 			this.updateOnlineStatus('Connected to multiplayer');
+			this.attemptResume();
 		});
 
 		this.socket.on('disconnect', () => {
-			this.updateOnlineStatus('Disconnected');
+			this.updateOnlineStatus('Disconnected — attempting to reconnect...');
 		});
 
 		this.socket.on('queue-joined', (data: { position: number }) => {
 			this.updateOnlineStatus(`In queue... (#${data.position})`);
 		});
 
-		this.socket.on('game-start', (data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number }) => {
+		this.socket.on('game-start', (data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }) => {
 			this.handleRemoteStart(data);
+		});
+
+		this.socket.on('game-resumed', (data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; state: RemoteGameState }) => {
+			this.handleGameResumed(data);
+		});
+
+		this.socket.on('player-disconnected', (data: { playerNumber: number }) => {
+			this.updateOnlineStatus(`Opponent disconnected (P${data.playerNumber}). Waiting up to 60s...`);
+		});
+
+		this.socket.on('opponent-returned', (data: { playerNumber: number }) => {
+			this.updateOnlineStatus(`Opponent reconnected (P${data.playerNumber}).`);
+		});
+
+		this.socket.on('resume-failed', (data: { reason: string }) => {
+			console.warn('Resume failed', data?.reason);
+			this.clearResumeData();
 		});
 
 		this.socket.on('game-update', (data: RemoteGameState) => {
@@ -235,10 +254,12 @@ class PongTournamentApp {
 		this.showScreen('welcome-screen');
 	}
 
-	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number }): void {
+	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }): void {
 		this.remotePlayerIndex = data.playerNumber === 1 ? 0 : 1;
 		this.remoteOpponent = data.opponent;
 		this.remoteRoomId = data.roomId;
+		this.remoteResume = { roomId: data.roomId, token: data.resumeToken, playerNumber: data.playerNumber };
+		this.saveResumeData();
 		this.updateOnlineStatus(`Match vs ${data.opponent}`);
 		this.showChatPanel(true);
 		this.clearChatLog();
@@ -255,6 +276,40 @@ class PongTournamentApp {
 		engine.setCanvasSize(data.canvasWidth, data.canvasHeight);
 		engine.play();
 
+		this.showScreen('game-arena');
+	}
+
+	private handleGameResumed(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; state: RemoteGameState }): void {
+		// Update resume info
+		this.remotePlayerIndex = data.playerNumber === 1 ? 0 : 1;
+		this.remoteOpponent = data.opponent;
+		this.remoteRoomId = data.roomId;
+		const existingToken = this.remoteResume?.token || this.loadResumeData()?.token || '';
+		this.remoteResume = { roomId: data.roomId, token: existingToken, playerNumber: data.playerNumber };
+		this.saveResumeData();
+
+		// Create engine if missing
+		if (!this.remoteEngine) {
+			const engine = new PongGameEngine();
+			this.remoteEngine = engine;
+			this.activeGame = engine;
+			const settings = this.loadSettings();
+			engine.applySettings(settings);
+			engine.enableRemoteMode(this.remotePlayerIndex, (y: number) => {
+				this.socket?.emit('paddle-move', { y });
+			});
+			engine.initialize();
+			engine.setCanvasSize(data.canvasWidth, data.canvasHeight);
+			engine.play();
+		}
+
+		// Sync state
+		if (this.remoteEngine) {
+			this.remoteEngine.applyRemoteState(data.state);
+		}
+
+		this.showChatPanel(true);
+		this.updateOnlineStatus(`Reconnected vs ${data.opponent}`);
 		this.showScreen('game-arena');
 	}
 
@@ -286,11 +341,51 @@ class PongTournamentApp {
 		this.remoteRoomId = null;
 		this.remoteOpponent = null;
 		this.remotePlayerIndex = null;
+		this.clearResumeData();
 		this.showChatPanel(false);
 		this.updateOnlineStatus('Match finished');
 		const msg = data.reason === 'forfeit' ? 'Opponent left the match' : `Winner: Player ${data.winner}`;
 		alert(`Game over: ${msg}`);
 		this.showScreen('welcome-screen');
+	}
+
+	private saveResumeData(): void {
+		if (!this.remoteResume || !this.remoteResume.token) return;
+		try {
+			localStorage.setItem('pong_resume_match', JSON.stringify(this.remoteResume));
+		} catch (err) {
+			console.warn('Failed to persist resume token', err);
+		}
+	}
+
+	private loadResumeData(): { roomId: string; token: string; playerNumber: number } | null {
+		try {
+			const raw = localStorage.getItem('pong_resume_match');
+			if (!raw) return null;
+			return JSON.parse(raw);
+		} catch (err) {
+			console.warn('Failed to load resume token', err);
+			return null;
+		}
+	}
+
+	private clearResumeData(): void {
+		this.remoteResume = null;
+		try {
+			localStorage.removeItem('pong_resume_match');
+		} catch (err) {
+			console.warn('Failed to clear resume token', err);
+		}
+	}
+
+	private attemptResume(): void {
+		if (!this.socket) return;
+		if (!this.remoteResume) {
+			this.remoteResume = this.loadResumeData();
+		}
+		if (this.remoteResume && this.remoteResume.roomId && this.remoteResume.token) {
+			this.socket.emit('resume-game', { roomId: this.remoteResume.roomId, resumeToken: this.remoteResume.token });
+		}
 	}
 
 	private initializeChatUI(): void {
@@ -365,7 +460,7 @@ class PongTournamentApp {
 				googleBtn.disabled = true;
 				googleBtn.textContent = 'Connessione a Google...';
 				try {
-					const resp = await fetch('http://localhost:3000/api/auth/google/url');
+					const resp = await fetch(`${API_BASE_URL}/auth/google/url`);
 					if (!resp.ok) {
 						const msg = await resp.text();
 						throw new Error(`Backend ha risposto ${resp.status}: ${msg}`);

@@ -30,16 +30,20 @@ RUN addgroup -g 1001 webgroup && \
 COPY --from=compile-stage /build/build/ /usr/share/nginx/html/
 COPY nginx-config.conf /etc/nginx/nginx.conf
 
+# Copy SSL certificates from backend
+COPY backend/certs/ /etc/nginx/certs/
+
 # Set ownership for webapp user
 RUN chown -R webapp:webgroup /usr/share/nginx/html && \
     chown -R webapp:webgroup /var/cache/nginx && \
     chown -R webapp:webgroup /var/log/nginx && \
+    chown -R webapp:webgroup /etc/nginx/certs && \
     touch /var/run/nginx.pid && \
     chown webapp:webgroup /var/run/nginx.pid
 
 # Switch to non-root
 USER webapp
 
-EXPOSE 8080
+EXPOSE 8080 8443
 
 CMD ["nginx", "-g", "daemon off;"]

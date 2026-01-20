@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
+import { randomUUID } from 'crypto';
 
 interface Player {
   id: string;
@@ -7,6 +8,9 @@ interface Player {
   username: string;
   paddleY: number;
   ready: boolean;
+  resumeToken: string;
+  disconnected?: boolean;
+  reconnectTimer?: NodeJS.Timeout | null;
 }
 
 interface GameRoom {
@@ -34,6 +38,7 @@ export class GameServer {
   private rooms: Map<string, GameRoom> = new Map();
   private waitingPlayers: Map<string, { socket: Socket; username: string }> = new Map();
   private playerToRoom: Map<string, string> = new Map();
+  private readonly RECONNECT_GRACE_MS = 60_000;
 
   constructor(httpServer: HTTPServer) {
     this.io = new SocketIOServer(httpServer, {
@@ -66,6 +71,10 @@ export class GameServer {
 
       socket.on('leave-game', () => {
         this.handleLeaveGame(socket);
+      });
+
+      socket.on('resume-game', (data: { roomId: string; resumeToken: string }) => {
+        this.handleResume(socket, data);
       });
 
       socket.on('disconnect', () => {
@@ -110,14 +119,20 @@ export class GameServer {
           socketId: p1Entry[0],
           username: p1Entry[1].username,
           paddleY: 150,
-          ready: true
+          ready: true,
+          resumeToken: randomUUID(),
+          disconnected: false,
+          reconnectTimer: null
         },
         {
           id: p2Entry[0],
           socketId: p2Entry[0],
           username: p2Entry[1].username,
           paddleY: 150,
-          ready: true
+          ready: true,
+          resumeToken: randomUUID(),
+          disconnected: false,
+          reconnectTimer: null
         }
       ],
       ball: {
@@ -150,7 +165,8 @@ export class GameServer {
       playerNumber: 1,
       opponent: p2Entry[1].username,
       canvasWidth: room.canvasWidth,
-      canvasHeight: room.canvasHeight
+      canvasHeight: room.canvasHeight,
+      resumeToken: room.players[0].resumeToken
     });
 
     p2Entry[1].socket.emit('game-start', {
@@ -158,7 +174,8 @@ export class GameServer {
       playerNumber: 2,
       opponent: p1Entry[1].username,
       canvasWidth: room.canvasWidth,
-      canvasHeight: room.canvasHeight
+      canvasHeight: room.canvasHeight,
+      resumeToken: room.players[1].resumeToken
     });
 
     console.log(`[Match] Created room ${roomId}: ${p1Entry[1].username} vs ${p2Entry[1].username}`);
@@ -207,28 +224,90 @@ export class GameServer {
     const playerIndex = room.players.findIndex(p => p.socketId === socket.id);
     if (playerIndex === -1) return;
 
-    // Other player wins by forfeit
-    const winnerIndex = playerIndex === 0 ? 1 : 0;
-    room.gameState = 'finished';
-    room.winner = winnerIndex + 1;
-
-    // Notify both players
-    this.io.to(roomId).emit('game-over', {
-      winner: room.winner,
-      reason: 'forfeit',
-      finalScore: room.score
-    });
-
-    // Cleanup
-    this.cleanupRoom(roomId);
+    // Immediate forfeit when explicitly leaving
+    this.forfeitPlayer(roomId, playerIndex, 'forfeit');
   }
 
   private handleDisconnect(socket: Socket): void {
     // Remove from waiting queue
     this.waitingPlayers.delete(socket.id);
 
-    // Handle in-game disconnect
-    this.handleLeaveGame(socket);
+    const roomId = this.playerToRoom.get(socket.id);
+    if (!roomId) return;
+    const room = this.rooms.get(roomId);
+    if (!room || room.gameState !== 'playing') {
+      this.playerToRoom.delete(socket.id);
+      return;
+    }
+
+    const playerIndex = room.players.findIndex(p => p.socketId === socket.id);
+    if (playerIndex === -1) {
+      this.playerToRoom.delete(socket.id);
+      return;
+    }
+
+    // Mark disconnected and start grace timer
+    const player = room.players[playerIndex];
+    player.disconnected = true;
+    player.socketId = '';
+    if (player.reconnectTimer) {
+      clearTimeout(player.reconnectTimer);
+    }
+    player.reconnectTimer = setTimeout(() => {
+      this.forfeitPlayer(roomId, playerIndex, 'timeout');
+    }, this.RECONNECT_GRACE_MS);
+
+    this.playerToRoom.delete(socket.id);
+    this.io.to(roomId).emit('player-disconnected', { playerNumber: playerIndex + 1 });
+  }
+
+  private handleResume(socket: Socket, data: { roomId: string; resumeToken: string }): void {
+    const { roomId, resumeToken } = data || {};
+    if (!roomId || !resumeToken) {
+      socket.emit('resume-failed', { reason: 'invalid-payload' });
+      return;
+    }
+
+    const room = this.rooms.get(roomId);
+    if (!room || room.gameState !== 'playing') {
+      socket.emit('resume-failed', { reason: 'room-not-found' });
+      return;
+    }
+
+    const playerIndex = room.players.findIndex(p => p.resumeToken === resumeToken);
+    if (playerIndex === -1) {
+      socket.emit('resume-failed', { reason: 'invalid-token' });
+      return;
+    }
+
+    const player = room.players[playerIndex];
+    player.disconnected = false;
+    if (player.reconnectTimer) {
+      clearTimeout(player.reconnectTimer);
+      player.reconnectTimer = null;
+    }
+
+    // Rebind socket
+    player.socketId = socket.id;
+    this.playerToRoom.set(socket.id, roomId);
+    socket.join(roomId);
+
+    // Send current state back to player
+    socket.emit('game-resumed', {
+      roomId,
+      playerNumber: playerIndex + 1,
+      opponent: room.players[playerIndex === 0 ? 1 : 0].username,
+      canvasWidth: room.canvasWidth,
+      canvasHeight: room.canvasHeight,
+      state: {
+        ball: room.ball,
+        paddles: room.players.map(p => ({ y: p.paddleY })),
+        score: room.score
+      }
+    });
+
+    // Notify opponent
+    socket.to(roomId).emit('opponent-returned', { playerNumber: playerIndex + 1 });
   }
 
   private startGameLoop(): void {
@@ -276,13 +355,13 @@ export class GameServer {
       room.score.player2++;
       this.resetBall(room);
       if (room.score.player2 >= 5) {
-        this.endGame(room, 2);
+        this.endGame(room, 2, 'score');
       }
     } else if (ball.x >= room.canvasWidth) {
       room.score.player1++;
       this.resetBall(room);
       if (room.score.player1 >= 5) {
-        this.endGame(room, 1);
+        this.endGame(room, 1, 'score');
       }
     }
   }
@@ -294,14 +373,14 @@ export class GameServer {
     room.ball.dy = (Math.random() - 0.5) * 6;
   }
 
-  private endGame(room: GameRoom, winner: number): void {
+  private endGame(room: GameRoom, winner: number, reason: 'score' | 'forfeit'): void {
     room.gameState = 'finished';
     room.winner = winner;
 
     this.io.to(room.id).emit('game-over', {
       winner,
       finalScore: room.score,
-      reason: 'score'
+      reason
     });
 
     // Cleanup after 5 seconds
@@ -318,9 +397,32 @@ export class GameServer {
     });
   }
 
+  private forfeitPlayer(roomId: string, playerIndex: number, reason: 'forfeit' | 'timeout'): void {
+    const room = this.rooms.get(roomId);
+    if (!room || room.gameState !== 'playing') return;
+
+    const player = room.players[playerIndex];
+    if (player.reconnectTimer) {
+      clearTimeout(player.reconnectTimer);
+      player.reconnectTimer = null;
+    }
+
+    // Other player wins
+    const winnerIndex = playerIndex === 0 ? 1 : 0;
+    this.endGame(room, winnerIndex + 1, 'forfeit');
+  }
+
   private cleanupRoom(roomId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
+
+    // Clear pending reconnect timers
+    room.players.forEach(p => {
+      if (p.reconnectTimer) {
+        clearTimeout(p.reconnectTimer);
+        p.reconnectTimer = null;
+      }
+    });
 
     room.players.forEach(p => {
       this.playerToRoom.delete(p.socketId);

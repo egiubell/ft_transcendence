@@ -57,6 +57,7 @@ services:
     restart: unless-stopped
     ports:
       - "0.0.0.0:8080:8080"
+      - "0.0.0.0:8443:8443"
     environment:
       - APP_ENV=production
     depends_on:
