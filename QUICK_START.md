@@ -25,6 +25,21 @@ That's it. This command:
 - **Backend API**: [http://localhost:3000/api](http://localhost:3000/api)
 - **Health Check**: [http://localhost:3000/api/health](http://localhost:3000/api/health)
 
+### 🔒 HTTPS (backend, opzionale in dev)
+
+```bash
+bash generate-certs.sh
+# in .env
+USE_HTTPS=true
+SSL_KEY_PATH=/app/certs/server.key
+SSL_CERT_PATH=/app/certs/server.cert
+
+make build && make up
+docker logs transcendence-backend-1 | grep HTTPS
+curl -k https://localhost:3000/api/health
+```
+Nota: self-signed → warning del browser; in produzione usa certificati validi (es. Let's Encrypt).
+
 ---
 
 ## 🎮 Quick Test: Local Multiplayer

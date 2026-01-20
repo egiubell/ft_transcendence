@@ -1,5 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { initializeDatabase } from './db/init';
@@ -11,9 +14,28 @@ import { GameServer } from './websocket/gameServer';
 dotenv.config();
 
 const app = express();
-const httpServer = createServer(app);
 const PORT = parseInt(process.env.BACKEND_PORT || '3000', 10);
 const HOST = process.env.BACKEND_HOST || 'localhost';
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
+
+// Create server (HTTPS in production, HTTP for development)
+let httpServer;
+if (USE_HTTPS) {
+  try {
+    const httpsOptions = {
+      key: readFileSync(process.env.SSL_KEY_PATH || join(__dirname, '../certs/server.key')),
+      cert: readFileSync(process.env.SSL_CERT_PATH || join(__dirname, '../certs/server.cert'))
+    };
+    httpServer = createHttpsServer(httpsOptions, app);
+    console.log('🔒 HTTPS enabled');
+  } catch (error) {
+    console.warn('⚠️  SSL certificates not found, falling back to HTTP');
+    httpServer = createServer(app);
+  }
+} else {
+  httpServer = createServer(app);
+  console.log('⚠️  Running in HTTP mode (development only)');
+}
 
 // Middleware
 app.use(cors({
@@ -62,9 +84,10 @@ const gameServer = new GameServer(httpServer);
 console.log('🎮 WebSocket game server initialized');
 
 // Start server
+const protocol = USE_HTTPS ? 'https' : 'http';
 httpServer.listen(PORT, HOST, () => {
-  console.log(`🚀 Backend running on http://${HOST}:${PORT}`);
-  console.log(`📝 API available at http://${HOST}:${PORT}/api`);
+  console.log(`🚀 Backend running on ${protocol}://${HOST}:${PORT}`);
+  console.log(`📝 API available at ${protocol}://${HOST}:${PORT}/api`);
   console.log(`🔌 WebSocket ready for multiplayer games`);
 });
 

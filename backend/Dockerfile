@@ -21,6 +21,9 @@ RUN npm install --omit=dev
 # Copy compiled code from build stage
 COPY --from=compile-stage /build/build ./build/
 
+# Copy SSL certificates (optional, for HTTPS)
+COPY certs/ ./certs/
+
 # Create non-root user
 RUN addgroup -g 1001 appgroup && \
     adduser -u 1001 -S appuser -G appgroup && \

@@ -97,6 +97,26 @@ make re
 # Backend API: http://localhost:3000/api
 ```
 
+### HTTPS (backend, sviluppo)
+```bash
+# Genera certificati self-signed
+bash generate-certs.sh
+
+# Imposta in .env
+USE_HTTPS=true
+SSL_KEY_PATH=/app/certs/server.key
+SSL_CERT_PATH=/app/certs/server.cert
+
+# Ricostruisci e avvia
+make build
+make up
+
+# Verifica
+docker logs transcendence-backend-1 | grep HTTPS
+curl -k https://localhost:3000/api/health
+```
+Nota: con self-signed il browser segnala "connessione non sicura"; in produzione usa certificati validi (es. Let's Encrypt).
+
 ### Alternative Commands
 
 ```bash
