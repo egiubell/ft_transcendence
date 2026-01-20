@@ -142,15 +142,6 @@ Verify all 14 points achieved?
   ├─ All game modes working ✅
   └─ Production ready ✅
 
-📋 PRODUCTION_NOTES.md (DEPLOYMENT & OPERATIONS)
-  ├─ Docker deployment setup
-  ├─ Environment configuration
-  ├─ HTTPS/TLS certificates (Let's Encrypt)
-  ├─ Database migrations
-  ├─ Security hardening
-  ├─ Performance optimization
-  ├─ Monitoring and logging
-  └─ Troubleshooting in production
 ```
   ├─ WebSocket event handlers
   ├─ nginx reverse proxy config

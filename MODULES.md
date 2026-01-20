@@ -103,7 +103,7 @@
   - Predicts ball trajectory
   - Smooth paddle movement toward target
   - Difficulty levels affect reaction time and accuracy
-- **Modes**: Single-player vs AI or AI tournament
+- **Modes**: Single-player vs AI
 - **Same Physics**: Uses identical game engine as multiplayer
 - **Challenge**: AI is beatable with skill but provides good competition
 
