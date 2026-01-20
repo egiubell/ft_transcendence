@@ -1,68 +1,80 @@
 # ft_transcendence 🏓
 
-A modern **real-time multiplayer Pong tournament web application** with user authentication, WebSocket support, and integrated chat.
+A modern **real-time multiplayer Pong tournament web application** with user authentication, WebSocket support, multi-language internationalization, and integrated chat.
 
-**Project Status:** ✅ Fully functional with 15+ module points.
+**Project Status:** ✅ **14/14 Module Points Complete** - Production Ready
 
 ---
 
 ## 📋 Project Overview
 
-**ft_transcendence** is a full-stack web application that brings classic Pong gameplay into the modern era with real-time multiplayer capabilities. Two players can compete online in real-time, chat during matches, track their game statistics, and participate in tournament brackets.
+**ft_transcendence** is a full-stack web application that brings classic Pong gameplay into the modern era with real-time multiplayer capabilities. Players can compete online in real-time, chat during matches, track game statistics, participate in tournament brackets, and choose from 3 languages.
 
 ### ✨ Key Features
 
-- **🎮 Real-time Multiplayer Pong**: Play 1v1 matches against other users in real-time with seamless synchronization.
-- **💬 In-Match Chat**: Communicate with your opponent during gameplay.
-- **🔐 Secure Authentication**: Email/password signup and login with bcrypt password hashing and JWT tokens.
-- **📊 Game Statistics**: Track match history, wins/losses, and view statistics on persistent leaderboards.
-- **🎯 Matchmaking Queue**: Automatic player pairing for quick online games.
-- **⚙️ Game Customization**: Adjust ball speed, paddle size, maps, power-ups, and attacks.
-- **🤖 AI Opponent**: Play against an intelligent AI in single-player mode.
-- **🎪 Tournament System**: Bracket-based tournaments with round management.
-- **📱 Responsive Design**: Works seamlessly across desktop and mobile browsers.
-- **🐳 Containerized Deployment**: Single-command Docker deployment for easy setup.
+- **🎮 Real-time Multiplayer Pong** (2 pts): Play 1v1 matches against other users with 60 FPS server-authoritative physics and seamless synchronization.
+- **💬 Real-time WebSockets** (2 pts): Socket.io integration for instant communication and game state updates.
+- **🤖 AI Opponent** (2 pts): Intelligent AI with predictive paddle movement for single-player challenges.
+- **🔌 Automatic Reconnection** (2 pts): 60-second grace window for automatic match resumption without data loss.
+- **🔐 OAuth 2.0 Authentication** (1 pt): Secure email/password signup and Google login with JWT tokens.
+- **📊 Backend Framework** (1 pt): Express.js with full API, type safety, and middleware.
+- **🎪 Tournament System** (1 pt): Bracket-based tournaments for 2-8 players with automatic progression.
+- **⚙️ Game Customization** (1 pt): Adjust ball speed, paddle size, maps, power-ups, and difficulty.
+- **🌐 Multi-language Support** (1 pt): English, Italian, and French with automatic language switching and persistence.
+- **📱 Multi-browser Support** (1 pt): Tested on Chrome, Firefox, Edge, and Opera - fully compatible.
+- **🐳 Containerized Deployment**: Single-command Docker deployment with HTTPS support.
 
 ---
 
 ## 🛠️ Technical Stack
 
 ### Frontend
-- **TypeScript** with vanilla JavaScript
-- **HTML5 Canvas** for game rendering
-- **Socket.io-client** for real-time communication
-- **Tailwind CSS** framework for styling
-- **CSS3** for custom game-specific styles
-- **No frontend framework** (vanilla SPA approach)
+- **TypeScript** with vanilla JavaScript (no frameworks)
+- **HTML5 Canvas** for deterministic game rendering
+- **Socket.io-client** for real-time WebSocket communication
+- **Tailwind CSS** framework for responsive UI
+- **Custom i18n System** for 3 languages (EN, IT, FR)
+- **localStorage API** for settings and state persistence
 
 ### Backend
-- **Node.js + Express.js** framework
-- **PostgreSQL** database with persistent storage
-- **Socket.io** for WebSocket multiplayer support
-- **JWT** for stateless authentication
+- **Node.js + Express.js** framework with TypeScript
+- **PostgreSQL 15** database with connection pooling
+- **Socket.io** for real-time multiplayer synchronization
+- **JWT** tokens for stateless authentication
 - **bcrypt** for secure password hashing
-- **Google OAuth 2.0** integration (optional module)
+- **Google OAuth 2.0** integration for social authentication
 
 ### Infrastructure
 - **Docker & Docker Compose** for containerization
-- **nginx** as reverse proxy and static file server
-- **PostgreSQL 15** with health checks and volume persistence
+- **nginx** reverse proxy with HTTPS on port 8443
+- **PostgreSQL 15** with persistence and health checks
+- **Self-signed SSL certificates** for development HTTPS
 
 ---
 
-## 📦 Modules Implemented (14+ Points)
+## 📦 Modules Implemented (14/14 Points ✅)
 
-| Category | Module | Type | Points | Status |
-|----------|--------|------|--------|--------|
-| **Web** | WebSockets & Real-time Updates | Major | 2 | ✅ |
-| **Web** | User Interaction (Chat) | Major | 2 | ✅ |
-| **Gaming** | Complete 1v1 Game (Pong) | Major | 2 | ✅ |
-| **Gaming** | Remote Players (Network Multiplayer) | Major | 2 | ✅ |
-| **Gaming** | Tournament System | Minor | 1 | ✅ |
-| **Gaming** | Game Customization | Minor | 1 | ✅ |
-| **User Management** | Game Statistics & Match History | Minor | 1 | ✅ |
-| **Gaming** | Advanced Chat Features | Minor | 1 | ✅ |
-| | **TOTAL** | | **14** | ✅ |
+### Major Modules (2 points each = 8 points)
+
+| # | Module | Points | Status | Description |
+|---|--------|--------|--------|-------------|
+| 1 | **WebSockets & Real-time** | 2 | ✅ | Socket.io 60 FPS game state broadcast |
+| 2 | **Web-based Multiplayer Game** | 2 | ✅ | Pong 1v1 with server-authoritative physics |
+| 3 | **AI Opponent** | 2 | ✅ | Predictive paddle AI with difficulty levels |
+| 4 | **Disconnect/Reconnection** | 2 | ✅ | 60-second grace window with automatic resume |
+
+### Minor Modules (1 point each = 6 points)
+
+| # | Module | Points | Status | Description |
+|---|--------|--------|--------|-------------|
+| 5 | **Backend Framework** | 1 | ✅ | Express.js with full REST API |
+| 6 | **OAuth 2.0 Authentication** | 1 | ✅ | Google OAuth 2.0 integration |
+| 7 | **Tournament System** | 1 | ✅ | Bracket-based (2-8 players) |
+| 8 | **Game Customization** | 1 | ✅ | Settings, sliders, difficulty levels |
+| 9 | **Multi-browser Support** | 1 | ✅ | Chrome, Firefox, Edge, Opera tested |
+| 10 | **Internationalization (i18n)** | 1 | ✅ | 3 languages (EN, IT, FR) with 80+ keys |
+
+**TOTAL: 14/14 Points ✅**
 
 ---
 
@@ -73,127 +85,270 @@ A modern **real-time multiplayer Pong tournament web application** with user aut
 - **Git**
 - Modern browser (Chrome, Firefox, Safari, Edge)
 
-### Quick Start
+### Quick Start (Production with HTTPS)
 
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
 cd ft_transcendence
 
-# 2. Create environment file from template
+# 2. Create environment file
 cp .env.example .env
 
-# 3. (Optional) Edit .env for custom configuration
-#    - DB_PASS: PostgreSQL password
-#    - JWT_SECRET: JWT signing secret
-#    - FRONTEND_URL: http://localhost:8080 (or your domain)
-#    - GOOGLE_CLIENT_ID/SECRET: Only needed for OAuth
+# 3. Generate self-signed HTTPS certificates (one-time)
+bash generate-certs.sh
 
-# 4. Build and start all services
+# 4. Build and start all services (single command)
 make re
 
 # 5. Access the application
-# Frontend: http://localhost:8080
-# Backend API: http://localhost:3000/api
+# Frontend HTTPS: https://localhost:8443
+# Backend API: https://localhost:3000 (internal)
+# nginx proxy: https://localhost:8443 → backend:3000
 ```
 
-### HTTPS (backend, sviluppo)
+### HTTPS/TLS Configuration
+
+The application runs **HTTPS everywhere**:
+- **Frontend**: https://localhost:8443 (nginx reverse proxy)
+- **Backend**: https://localhost:3000 (Express with self-signed certs)
+- **HTTP Redirect**: http://localhost:8080 → https://localhost:8443
+- **Certificates**: Self-signed (acceptable for development, should use Let's Encrypt in production)
+
 ```bash
-# Genera certificati self-signed
+# Generate new certificates if needed
 bash generate-certs.sh
 
-# Imposta in .env
-USE_HTTPS=true
-SSL_KEY_PATH=/app/certs/server.key
-SSL_CERT_PATH=/app/certs/server.cert
-
-# Ricostruisci e avvia
-make build
-make up
-
-# Verifica
-docker logs transcendence-backend-1 | grep HTTPS
-curl -k https://localhost:3000/api/health
+# Verify HTTPS is working
+curl -k https://localhost:8443  # Frontend
+curl -k https://localhost:3000/api/health  # Backend
 ```
-Nota: con self-signed il browser segnala "connessione non sicura"; in produzione usa certificati validi (es. Let's Encrypt).
 
 ### Alternative Commands
 
 ```bash
-# Using Docker Compose directly
-docker compose down
-docker compose up --build
+# Build and start services
+make build && make up
 
-# Or using npm (requires Node.js 18+)
-cd backend && npm install && npm run build && npm start &
-npm install && npm run build
-# Then serve frontend from ./build directory
+# Rebuild everything from scratch
+make clean
+make re
+
+# View logs
+make logs
+
+# Stop all services
+make down
+
+# Remove all containers and volumes
+make clean-all
 ```
 
 ---
 
 ## 📖 Usage Guide
 
-### Authentication
-1. **Sign Up**: Create a new account with email and password
-2. **Login**: Access with registered credentials
-3. **Logout**: Click logout button in header or welcome screen
+### 1. Authentication & Signup
+```
+Welcome Screen → Click "Sign Up"
+├─ Enter email and password
+├─ Click "Sign Up"
+└─ Automatically logged in
 
-### Playing a Game
-1. Click **"Multiplayer Quick Game"** on welcome screen
-2. Wait for opponent to join (or open another browser tab with different account)
-3. When both players ready, game starts automatically
-4. **Controls:**
-   - **Player 1 (Left)**: W/S keys to move paddle up/down
-   - **Player 2 (Right)**: Arrow Up/Down keys to move paddle up/down
-5. **Chat**: Type messages in the chat panel to communicate with opponent
-6. **Exit Match**: Click "Exit Match" button to leave early
+Alternative: Click "Continue with Google"
+├─ Redirected to Google OAuth
+├─ Grant permissions
+└─ Account automatically created and logged in
+```
 
-### Tournament Mode
-1. Click **"Start New Tournament"**
-2. Add player aliases (minimum 2)
-3. Click **"Begin Tournament"**
-4. Play matches in bracket order
-5. Winners advance automatically
+### 2. Playing Multiplayer (Main Feature)
+```
+Main Menu → Click "Multiplayer Quick Game"
+├─ Enter queue (see position)
+├─ Wait for opponent (or open 2nd browser tab)
+├─ Game starts automatically when 2 players ready
+├─ Controls:
+│  ├─ Player 1 (Left Paddle): W/S keys or Arrow Up/Down
+│  └─ Player 2 (Right Paddle): Arrow Up/Down
+├─ Chat: Type in chat panel to message opponent
+└─ Match ends when one player reaches 5 points
+```
 
-### Game Statistics
-- Click **"Stats"** to view match history
-- Local stats are saved in browser storage
-- Each match records: date, players, winner, score
+### 3. Single Player vs AI
+```
+Main Menu → Click "Single Player"
+├─ AI difficulty: Easy/Medium/Hard (from settings)
+├─ Same controls as multiplayer
+└─ Game vs AI opponent
+```
 
-### Single Player
-- Click **"Single Player"** to play against AI
-- AI adapts difficulty based on your gameplay
+### 4. Tournament Mode
+```
+Main Menu → Click "Start New Tournament"
+├─ Add 2-4 player aliases
+├─ Click "Begin Tournament"
+├─ Bracket generated and displayed
+├─ Play matches in bracket order
+├─ Winners advance automatically
+└─ Final match determines champion
+```
 
-### Game Settings
-- Click **"Settings"** to customize:
-  - Ball speed (2-12)
-  - Paddle size (40-200)
-  - Map size (compact/classic/extended)
-  - Power-ups and attacks (toggle)
-  - Simple mode (toggle)
+### 5. Game Statistics & History
+```
+Main Menu → Click "Stats"
+├─ View total wins/losses
+├─ See last 10 matches with:
+│  ├─ Opponent name
+│  ├─ Result (Win/Loss)
+│  ├─ Score
+│  └─ Date/Time
+└─ Statistics persist across sessions
+```
+
+### 6. Game Settings & Customization
+```
+Any game screen → Click "Settings"
+├─ Ball Speed: Slider (2-12 units)
+├─ Paddle Size: Slider (40-200 pixels)
+├─ Map Selection: Classic/Compact/Extended
+├─ Power-ups: Enable/Disable toggle
+├─ Attacks: Enable/Disable toggle
+├─ Difficulty (AI): Easy/Medium/Hard
+└─ Settings saved and persist
+```
+
+### 7. Language Selection
+```
+Welcome Screen → Language buttons (top-right)
+├─ EN (English) → Entire UI translates
+├─ IT (Italiano) → All text in Italian
+└─ FR (Français) → All text in French
+
+Language selection persists in browser
+```
 
 ---
 
-## 🌐 Remote Testing (Multi-Device)
+## 🔧 Configuration
 
-### Method 1: Same Network (LAN)
+### Environment Variables (.env)
+
 ```bash
-# Find your Windows/Linux host IP
-ipconfig          # Windows
-ip addr show      # Linux/WSL
+# Database
+DB_HOST=database
+DB_PORT=5432
+DB_NAME=transcendence
+DB_USER=postgres
+DB_PASS=postgres_password
 
-# Access from another device on same network
-http://<HOST_IP>:8080
+# JWT
+JWT_SECRET=your_secret_key_here_min_32_chars
+JWT_EXPIRY=7d
+
+# Frontend URL
+FRONTEND_URL=https://localhost:8443
+
+# Google OAuth (optional, only needed for OAuth module)
+GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your-client-secret>
+GOOGLE_REDIRECT_URI=https://localhost:8443/api/auth/google/callback
+
+# Backend HTTPS
+USE_HTTPS=true
+SSL_CERT_PATH=/app/certs/server.cert
+SSL_KEY_PATH=/app/certs/server.key
 ```
 
-### Method 2: ngrok Tunnel (Public Access)
-```bash
-# Install ngrok from https://ngrok.com
-ngrok http 8080
+### Game Settings (Customizable via UI)
 
-# Share the public HTTPS URL with others
-https://your-ngrok-url.ngrok.io
+Access Settings menu in-game to configure:
+- **Ball Speed**: 2-12 units (higher = faster)
+- **Paddle Size**: 40-200 pixels (larger = easier)
+- **Map**: Classic, Compact, Extended
+- **Power-ups**: Enable/Disable
+- **Attacks**: Enable/Disable
+- **AI Difficulty**: Easy, Medium, Hard
+
+Settings persist in browser localStorage.
+
+---
+
+## 🌍 Multi-Language Support
+
+The application automatically detects browser language or allows manual selection:
+
+### Supported Languages
+- **English (EN)** - Default
+- **Italiano (IT)** - Italian translation
+- **Français (FR)** - French translation
+
+### 80+ Translated Elements
+- Authentication forms (login, signup, OAuth)
+- Menu and navigation buttons
+- Game controls and instructions
+- Settings panel labels
+- Tournament screens
+- Statistics displays
+- Status messages
+- Error messages
+
+### Switching Languages
+```
+Click language button (EN, IT, FR) on welcome screen
+→ All UI translates instantly
+→ Language choice persists across sessions
+```
+
+---
+
+## 🌐 Multi-Device Testing
+
+### Testing with Multiple Browsers
+
+Open in different browser tabs or windows:
+
+```bash
+# Tab 1: Player 1
+https://localhost:8443/
+# Login as user1
+
+# Tab 2: Player 2
+https://localhost:8443/
+# Login as user2 (or use Incognito window)
+
+# Both join Multiplayer Queue
+→ Automatic matchmaking pairs them
+→ Game starts with 60 FPS sync
+```
+
+### Testing Reconnection (60s Grace Window)
+
+```bash
+1. Start multiplayer game with 2 players
+2. Close one browser tab while game running
+3. Opponent sees "waiting 60s..." status
+4. Reopen the tab within 60 seconds
+5. Game resumes automatically with state preserved
+6. If >60s, opponent wins by forfeit
+```
+
+### Testing on Different Browsers
+
+```bash
+# Test each browser independently
+Chrome:  https://localhost:8443
+Firefox: https://localhost:8443
+Edge:    https://localhost:8443
+Opera:   https://localhost:8443
+
+# All browsers support:
+✅ Multiplayer games
+✅ AI single-player
+✅ OAuth login
+✅ Tournament mode
+✅ Multi-language switching
+✅ Game customization
+✅ All 14 module features
 ```
 
 ---

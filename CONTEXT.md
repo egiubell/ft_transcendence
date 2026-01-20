@@ -326,7 +326,87 @@ make re     # Builds images, starts containers, initializes DB
 
 ---
 
-## ⚠️ Known Limitations & Design Choices
+## 🌍 Internationalization (i18n) System
+
+**File**: [src/i18n.ts](src/i18n.ts) (~300 lines)
+
+### Architecture
+- **Singleton Pattern**: Single global `i18n` instance exported
+- **Language Support**: English (EN), Italian (IT), French (FR)
+- **Translation Keys**: 80+ keys organized by feature
+- **Persistence**: localStorage key `app_language`
+- **No External Dependencies**: Inlined translation objects (no JSON imports)
+
+### Translation Object Structure
+```typescript
+const enTranslations = {
+  header: {
+    connected: "Connected to multiplayer",
+    inQueue: "In queue...",
+    loggedIn: "Logged in as"
+  },
+  auth: {
+    login: "Login",
+    signup: "Sign Up",
+    email: "Email"
+  },
+  game: {
+    controls: "W/S keys to move up and down",
+    chat: "Match Chat"
+  },
+  // ... 70+ more keys
+}
+```
+
+### Usage in Frontend
+```typescript
+// Import
+import { i18n } from './i18n.js'
+
+// Translate a key
+const text = i18n.t('header.loggedIn')  // "Logged in as" (or IT/FR equivalent)
+
+// Switch language
+i18n.setLanguage('it')          // Switch to Italian
+window.location.reload()         // Reload to apply
+
+// Get available languages
+const langs = i18n.getAvailableLanguages()  // ['en', 'it', 'fr']
+```
+
+### HTML Integration
+All user-facing text elements have `data-i18n` attributes:
+```html
+<button data-i18n="auth.login">Login</button>
+<h1 data-i18n="header.title">Welcome</h1>
+```
+
+### Dynamic Translation
+For text generated in JavaScript (e.g., "Connected to multiplayer"):
+```typescript
+// Socket event handler
+socket.on('connect', () => {
+  headerStatus.textContent = i18n.t('header.connected')
+})
+```
+
+### Supported Languages
+| Language | Code | Status | Keys |
+|----------|------|--------|------|
+| English | EN | ✅ Default | 80+ |
+| Italiano | IT | ✅ Complete | 80+ |
+| Français | FR | ✅ Complete | 80+ |
+
+### Application Flow
+1. **Page Load** → Detect browser language or get from localStorage
+2. **Default EN** → If no preference stored
+3. **User Click Language Button** → `i18n.setLanguage('it')` + page reload
+4. **All UI Translates** → `applyTranslations()` function applies data-i18n values
+5. **Persistence** → Language choice saved to localStorage
+
+---
+
+## 🛡️ Security Features
 
 1. **Vanilla TypeScript Frontend**
    - No framework (React/Vue)
