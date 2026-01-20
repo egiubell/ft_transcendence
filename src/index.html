@@ -4,165 +4,177 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Tournament Championship</title>
-    <!-- Cache-busted styles to avoid stale CSS in dev (immutable caching in nginx) -->
+    <!-- Tailwind CSS Framework -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom styles for game-specific elements -->
     <link rel="stylesheet" href="styles/app.css?v=dev1">
     <link rel="stylesheet" href="styles/auth.css?v=dev1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
     <script src="https://cdn.socket.io/4.7.2/socket.io.js"></script>
 </head>
-<body>
-    <div id="app-container">
-        <header class="main-header">
-            <h1>Pong Tournament</h1>
-            <nav id="navigation-menu">
-                <span id="current-user-display-header" class="user-display" style="display: none;"></span>
-                <button id="logout-btn-header" class="secondary-btn" title="Logout" style="display: none;">Logout</button>
-                <span id="online-status" class="status-pill" style="display:none;">Offline</span>
-                <button id="settings-btn" class="secondary-btn" title="Settings">Settings</button>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div id="app-container" class="flex flex-col min-h-screen">
+        <header class="main-header bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg px-6 py-4">
+            <h1 class="text-3xl font-bold text-white">Pong Tournament</h1>
+            <nav id="navigation-menu" class="flex items-center gap-4">
+                <span id="current-user-display-header" class="user-display text-sm text-gray-300" style="display: none;"></span>
+                <button id="logout-btn-header" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition" title="Logout" style="display: none;">Logout</button>
+                <span id="online-status" class="px-3 py-1 bg-green-600 rounded-full text-xs font-semibold" style="display:none;">Offline</span>
+                <button id="settings-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition" title="Settings">Settings</button>
             </nav>
         </header>
         
-        <main id="content-area">
+        <main id="content-area" class="flex-1 p-6">
             <!-- Auth Screen -->
             <div id="auth-screen" class="screen">
-                <div class="auth-container">
-                    <h1 class="auth-title">🏓 Pong Tournament</h1>
-                    <form id="login-form" class="auth-form active">
-                        <h2>Login</h2>
-                        <div class="form-group">
-                            <label for="login-email">Email</label>
-                            <input type="email" id="login-email" placeholder="your@email.com" required>
+                <div class="flex items-center justify-center min-h-full">
+                <div class="auth-container bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+                    <h1 class="auth-title text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏓 Pong Tournament</h1>
+                    <form id="login-form" class="auth-form active space-y-4">
+                        <h2 class="text-2xl font-bold text-center text-white mb-4">Login</h2>
+                        <div class="form-group space-y-2">
+                            <label for="login-email" class="block text-sm font-medium text-gray-300">Email</label>
+                            <input type="email" id="login-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <div class="form-group">
-                            <label for="login-password">Password</label>
-                            <input type="password" id="login-password" placeholder="••••••••" required>
+                        <div class="form-group space-y-2">
+                            <label for="login-password" class="block text-sm font-medium text-gray-300">Password</label>
+                            <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <button type="submit" class="primary-btn">Login</button>
-                        <p class="form-toggle">
-                            Don't have an account? <a href="#" onclick="toggleAuthForm(); return false;">Sign up</a>
+                        <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105">Login</button>
+                        <p class="form-toggle text-center text-gray-400 text-sm">
+                            Don't have an account? <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold">Sign up</a>
                         </p>
-                        <button type="button" id="google-login-btn" class="secondary-btn" style="width:100%">Continua con Google</button>
-                        <div id="login-error" class="error-message"></div>
+                        <button type="button" id="google-login-btn" class="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold transition flex items-center justify-center gap-2" style="width:100%">🔑 Continua con Google</button>
+                        <div id="login-error" class="error-message text-red-400 text-sm text-center"></div>
                     </form>
 
-                    <form id="signup-form" class="auth-form">
+                    <form id="signup-form" class="auth-form space-y-4">
+                        <h2 class="text-2xl font-bold text-center text-white mb-4">Sign Up</h2>
                         <h2>Create Account</h2>
-                        <div class="form-group">
-                            <label for="signup-email">Email</label>
-                            <input type="email" id="signup-email" placeholder="your@email.com" required>
+                        <div class="form-group space-y-2">
+                            <label for="signup-email" class="block text-sm font-medium text-gray-300">Email</label>
+                            <input type="email" id="signup-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <div class="form-group">
-                            <label for="signup-username">Username</label>
-                            <input type="text" id="signup-username" placeholder="your_username" required>
+                        <div class="form-group space-y-2">
+                            <label for="signup-username" class="block text-sm font-medium text-gray-300">Username</label>
+                            <input type="text" id="signup-username" placeholder="your_username" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <div class="form-group">
-                            <label for="signup-password">Password</label>
-                            <input type="password" id="signup-password" placeholder="••••••••" required>
+                        <div class="form-group space-y-2">
+                            <label for="signup-password" class="block text-sm font-medium text-gray-300">Password</label>
+                            <input type="password" id="signup-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <div class="form-group">
-                            <label for="signup-confirm">Confirm Password</label>
-                            <input type="password" id="signup-confirm" placeholder="••••••••" required>
+                        <div class="form-group space-y-2">
+                            <label for="signup-confirm" class="block text-sm font-medium text-gray-300">Confirm Password</label>
+                            <input type="password" id="signup-confirm" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
                         </div>
-                        <button type="submit" class="primary-btn">Sign Up</button>
-                        <p class="form-toggle">
-                            Already have an account? <a href="#" onclick="toggleAuthForm(); return false;">Login</a>
+                        <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105">Sign Up</button>
+                        <p class="form-toggle text-center text-gray-400 text-sm">
+                            Already have an account? <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold">Login</a>
                         </p>
-                        <div id="signup-error" class="error-message"></div>
+                        <div id="signup-error" class="error-message text-red-400 text-sm text-center"></div>
                     </form>
                 </div>
             </div>
+        </div>
 
-            <div id="welcome-screen" class="screen">
-                <h2>Welcome to Pong Tournament!</h2>
-                <div class="user-info-bar">
-                    <span id="current-user-display">Not logged in</span>
-                    <button id="logout-btn" class="secondary-btn">Logout</button>
+        <div id="welcome-screen" class="screen">
+                <div class="flex flex-col items-center justify-center space-y-6 max-w-2xl mx-auto">
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Welcome to Pong Tournament!</h2>
+                <button id="start-tournament-btn" class="primary-btn w-full max-w-md py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg">Start New Tournament</button>
+                <button id="quick-game-btn" class="w-full max-w-md py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold text-lg transition transform hover:scale-105">Multiplayer Quick Game</button>
+                <button id="single-player-btn" class="w-full max-w-md py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold text-lg transition transform hover:scale-105">Single Player</button>
+                <button id="stats-btn" class="w-full max-w-md py-4 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-lg transition transform hover:scale-105">Stats</button>
                 </div>
-                <button id="start-tournament-btn" class="primary-btn">Start New Tournament</button>
-                <button id="quick-game-btn" class="secondary-btn">Multiplayer Quick Game</button>
-                <button id="single-player-btn" class="secondary-btn">Single Player</button>
-                <button id="stats-btn" class="secondary-btn">Stats</button>
             </div>
             
             <div id="tournament-setup" class="screen">
-                <h2>Tournament Setup</h2>
-                <div id="player-registration">
-                    <input type="text" id="player-alias" placeholder="Enter your alias">
-                    <button id="add-player-btn">Add Player</button>
+                <div class="flex flex-col items-center space-y-6">
+                <h2 class="text-3xl font-bold text-purple-400">Tournament Setup</h2>
+                <div id="player-registration" class="flex gap-3 w-full max-w-md">
+                    <input type="text" id="player-alias" placeholder="Enter your alias" class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
+                    <button id="add-player-btn" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition">Add Player</button>
                 </div>
-                <div id="registered-players"></div>
-                <button id="begin-tournament-btn" disabled>Begin Tournament</button>
+                <div id="registered-players" class="w-full max-w-md space-y-2"></div>
+                <button id="begin-tournament-btn" disabled class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">Begin Tournament</button>
+                </div>
             </div>
             
             <div id="game-arena" class="screen">
-                <div id="game-info">
-                    <span id="player1-name">Player 1</span>
-                    <span id="game-score">0 - 0</span>
-                    <span id="player2-name">Player 2</span>
+                <div class="flex flex-col items-center space-y-4">
+                <div id="game-info" class="flex justify-between items-center w-full max-w-4xl px-6 py-3 bg-gray-800 rounded-lg border border-gray-700">
+                    <span id="player1-name" class="text-lg font-bold text-blue-400">Player 1</span>
+                    <span id="game-score" class="text-2xl font-bold text-white">0 - 0</span>
+                    <span id="player2-name" class="text-lg font-bold text-pink-400">Player 2</span>
                 </div>
-                <canvas id="pong-canvas" width="800" height="400"></canvas>
-                <div id="game-controls">
-                    <p>Player 1: W/S keys | Player 2: Arrow Up/Down keys</p>
-                        <button id="exit-match-btn" class="secondary-btn">Exit Match</button>
+                <canvas id="pong-canvas" width="800" height="400" class="border-4 border-purple-600 rounded-lg shadow-2xl"></canvas>
+                <div id="game-controls" class="flex flex-col items-center gap-2">
+                    <p class="text-gray-400 text-sm">W/S keys to move up and down</p>
+                        <button id="exit-match-btn" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition">Exit Match</button>
                 </div>
-                <div id="chat-panel" class="chat-panel" style="display:none;">
-                    <div class="chat-header">Match Chat</div>
-                    <div id="chat-log" class="chat-log"></div>
-                    <div class="chat-input-row">
-                        <input id="chat-input" type="text" placeholder="Send a message" maxlength="300">
-                        <button id="chat-send" class="secondary-btn">Send</button>
+                <div id="chat-panel" class="chat-panel w-full max-w-lg bg-gray-800 rounded-lg p-4 border border-gray-700" style="display:none;">
+                    <div class="chat-header text-lg font-semibold mb-3 text-purple-400">Match Chat</div>
+                    <div id="chat-log" class="chat-log bg-gray-900 rounded p-3 h-48 overflow-y-auto mb-3 space-y-2"></div>
+                    <div class="chat-input-row flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Send a message" maxlength="300" class="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
+                        <button id="chat-send" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition font-semibold">Send</button>
                     </div>
+                </div>
                 </div>
             </div>
             
             <div id="tournament-bracket" class="screen">
-                <h2>Tournament bracket</h2>
-                <div id="bracket-display"></div>
-                <button id="next-match-btn">Start Next Match</button>
+                <div class="flex flex-col items-center space-y-6">
+                <h2 class="text-3xl font-bold text-purple-400">Tournament bracket</h2>
+                <div id="bracket-display" class="w-full max-w-4xl"></div>
+                <button id="next-match-btn" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition transform hover:scale-105">Start Next Match</button>
+                </div>
             </div>
             
             <div id="stats-screen" class="screen">
-                <h2>Match Statistics (Local)</h2>
-                <div id="stats-container">
-                    <p>No data yet.</p>
+                <div class="flex flex-col items-center space-y-6">
+                <h2 class="text-3xl font-bold text-green-400">Match Statistics (Local)</h2>
+                <div id="stats-container" class="w-full max-w-4xl bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <p class="text-gray-400">No data yet.</p>
                 </div>
-                <button id="clear-stats" class="secondary-btn">Clear Local Stats</button>
+                <button id="clear-stats" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition">Clear Local Stats</button>
+                <button id="stats-back-btn" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">Back</button>
+                </div>
             </div>
         </main>
     </div>
         <!-- Settings panel -->
-        <div id="settings-panel" class="screen-settings" aria-hidden="true">
-            <div class="settings-content">
-                <h2>Game Settings</h2>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-powerups"> Enable Power-ups</label>
+        <div id="settings-panel" class="screen-settings fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" aria-hidden="true">
+            <div class="settings-content bg-gray-800 rounded-2xl p-8 w-full max-w-md border border-gray-700 shadow-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-purple-400">Game Settings</h2>
+                <div class="setting-row flex items-center gap-3 mb-4">
+                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-powerups" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> Enable Power-ups</label>
                 </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-attacks"> Enable Attacks</label>
+                <div class="setting-row flex items-center gap-3 mb-4">
+                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-attacks" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> Enable Attacks</label>
                 </div>
-                <div class="setting-row">
-                    <label for="opt-map">Map</label>
-                    <select id="opt-map">
+                <div class="setting-row flex flex-col gap-2 mb-4">
+                    <label for="opt-map" class="text-sm font-medium text-gray-300">Map</label>
+                    <select id="opt-map" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500">
                         <option value="classic">Classic</option>
                         <option value="compact">Compact</option>
                         <option value="extended">Extended</option>
                     </select>
                 </div>
-                <div class="setting-row">
-                    <label for="opt-ball-speed">Ball speed</label>
-                    <input id="opt-ball-speed" type="range" min="2" max="12" value="5">
+                <div class="setting-row flex flex-col gap-2 mb-4">
+                    <label for="opt-ball-speed" class="text-sm font-medium text-gray-300">Ball speed</label>
+                    <input id="opt-ball-speed" type="range" min="2" max="12" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                 </div>
-                <div class="setting-row">
-                    <label for="opt-paddle-size">Paddle size</label>
-                    <input id="opt-paddle-size" type="range" min="40" max="200" value="100">
+                <div class="setting-row flex flex-col gap-2 mb-4">
+                    <label for="opt-paddle-size" class="text-sm font-medium text-gray-300">Paddle size</label>
+                    <input id="opt-paddle-size" type="range" min="40" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                 </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="opt-simple"> Default (Simple) Mode</label>
+                <div class="setting-row flex items-center gap-3 mb-6">
+                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-simple" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> Default (Simple) Mode</label>
                 </div>
-                <div class="settings-actions">
-                    <button id="save-settings" class="primary-btn">Save</button>
-                    <button id="reset-settings" class="secondary-btn">Reset</button>
-                    <button id="close-settings" class="secondary-btn">Close</button>
+                <div class="settings-actions flex gap-3">
+                    <button id="save-settings" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition">Save</button>
+                    <button id="reset-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">Reset</button>
+                    <button id="close-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">Close</button>
                 </div>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 A modern **real-time multiplayer Pong tournament web application** with user authentication, WebSocket support, and integrated chat.
 
-**Project Status:** ✅ Fully functional with 14+ module points.
+**Project Status:** ✅ Fully functional with 15+ module points.
 
 ---
 
@@ -31,8 +31,9 @@ A modern **real-time multiplayer Pong tournament web application** with user aut
 - **TypeScript** with vanilla JavaScript
 - **HTML5 Canvas** for game rendering
 - **Socket.io-client** for real-time communication
-- **CSS3** for responsive styling
-- **No frameworks** (vanilla SPA approach)
+- **Tailwind CSS** framework for styling
+- **CSS3** for custom game-specific styles
+- **No frontend framework** (vanilla SPA approach)
 
 ### Backend
 - **Node.js + Express.js** framework

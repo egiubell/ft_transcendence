@@ -259,11 +259,13 @@ class PongTournamentApp {
 	}
 
 	private handleRemoteUpdate(data: RemoteGameState): void {
-		if (!this.remoteEngine) return;
+		if (!this.remoteRoomId || !this.remoteEngine) return;
 		this.remoteEngine.applyRemoteState(data);
 	}
 
 	private handleRemoteOver(data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }): void {
+		if (!this.remoteRoomId) return;
+
 		if (this.remoteEngine) {
 			this.remoteEngine.stop();
 			this.remoteEngine = null;
@@ -413,6 +415,10 @@ class PongTournamentApp {
 		document.getElementById('stats-btn')?.addEventListener('click', () => {
 			this.showScreen('stats-screen');
 			this.renderStatsScreen();
+		});
+
+		document.getElementById('stats-back-btn')?.addEventListener('click', () => {
+			this.showScreen('welcome-screen');
 		});
 
 		// Settings panel actions
@@ -695,6 +701,13 @@ class PongTournamentApp {
 			screenId = 'welcome-screen';
 		}
 
+		// If we are leaving an active game, stop it before switching screens
+		if (this.currentScreen === 'game-arena' && screenId !== 'game-arena') {
+			this.teardownActiveGame();
+		}
+
+		console.log('🎯 showScreen called with:', screenId);
+
 		document.querySelectorAll('.screen').forEach(screen => {
 			screen.classList.remove('active');
 		});
@@ -703,6 +716,9 @@ class PongTournamentApp {
 		if (targetScreen) {
 			targetScreen.classList.add('active');
 			this.currentScreen = screenId;
+			console.log('✅ Screen shown:', screenId, 'Classes:', targetScreen.className);
+		} else {
+			console.error('❌ Screen not found:', screenId);
 		}
 
 		// Remove the settings button from the DOM while in the game screen; recreate otherwise
@@ -774,10 +790,16 @@ class PongTournamentApp {
 		this.updatePlayerDisplay();
 		aliasInput.value = '';
 		
-		// Update tournament start button state
+		// Update tournament start button state (requires even number of players)
 		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
 		if (beginBtn) {
-			beginBtn.disabled = this.registeredPlayers.length < 2;
+			const count = this.registeredPlayers.length;
+			beginBtn.disabled = count < 2 || count % 2 !== 0;
+			if (count > 0 && count % 2 !== 0) {
+				beginBtn.title = 'Tournament requires an even number of players';
+			} else {
+				beginBtn.title = '';
+			}
 		}
 	}
 
@@ -820,19 +842,31 @@ class PongTournamentApp {
 		this.registeredPlayers = this.registeredPlayers.filter(p => p.id !== sanitizedId);
 		this.updatePlayerDisplay();
 		
+		// Update tournament start button state (requires even number of players)
 		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
 		if (beginBtn) {
-			beginBtn.disabled = this.registeredPlayers.length < 2;
+			const count = this.registeredPlayers.length;
+			beginBtn.disabled = count < 2 || count % 2 !== 0;
+			if (count > 0 && count % 2 !== 0) {
+				beginBtn.title = 'Tournament requires an even number of players';
+			} else {
+				beginBtn.title = '';
+			}
 		}
 	}
 
 	private startTournament(): void {
-		if (this.registeredPlayers.length >= 2) {
-			this.generateTournamentBracket();
-			this.showScreen('tournament-bracket');
-		} else {
+		const count = this.registeredPlayers.length;
+		if (count < 2) {
 			this.showError('Need at least 2 players to start a tournament!');
+			return;
 		}
+		if (count % 2 !== 0) {
+			this.showError('Tournament requires an even number of players!');
+			return;
+		}
+		this.generateTournamentBracket();
+		this.showScreen('tournament-bracket');
 	}
 
 	private generateTournamentBracket(): void {
@@ -921,7 +955,7 @@ class PongTournamentApp {
 				if (match.winner?.id === match.player1.id) {
 					player1Span.className = 'winner';
 				}
-				
+			
 				const vsSpan = document.createElement('span');
 				vsSpan.className = 'vs';
 				vsSpan.textContent = 'vs';
@@ -1259,6 +1293,38 @@ class PongTournamentApp {
 		}
 	}
 
+	/** Stop any running game instance and clean up network state without navigating */
+	private teardownActiveGame(): void {
+		if (this.activeGame) {
+			try {
+				this.activeGame.stop();
+			} catch (e) {
+				console.warn('Error stopping active game', e);
+			}
+			this.activeGame = null;
+		}
+
+		if (this.remoteEngine) {
+			try {
+				this.remoteEngine.stop();
+			} catch (e) {
+				console.warn('Error stopping remote engine', e);
+			}
+			this.remoteEngine = null;
+		}
+
+		if (this.socket && this.remoteRoomId) {
+			this.socket.emit('leave-game');
+		}
+
+		this.remoteRoomId = null;
+		this.remoteOpponent = null;
+		this.remotePlayerIndex = null;
+		this.showChatPanel(false);
+		this.updateOnlineStatus('Left match');
+		document.getElementById('settings-btn')?.removeAttribute('disabled');
+	}
+
 	/** Show a small toast message */
 	private showToast(message: string, duration: number = 1500): void {
 		const toast = document.createElement('div');
@@ -1276,25 +1342,7 @@ class PongTournamentApp {
 
 	/** Exit current match early and return to main menu */
 	public exitCurrentMatch(): void {
-		if (this.activeGame) {
-			try {
-				this.activeGame.stop();
-			} catch (e) {
-				console.warn('Error stopping active game', e);
-			}
-			this.activeGame = null;
-		}
-		if (this.socket && this.remoteRoomId) {
-			this.socket.emit('leave-game');
-			this.remoteRoomId = null;
-			this.remoteOpponent = null;
-			this.remotePlayerIndex = null;
-			this.remoteEngine = null;
-			this.updateOnlineStatus('Left match');
-		}
-		this.showChatPanel(false);
-		// Re-enable settings and show menu
-		document.getElementById('settings-btn')?.removeAttribute('disabled');
+		this.teardownActiveGame();
 		this.showScreen('welcome-screen');
 	}
 
