@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs clean fclean re dev prod status shell volumes network
+.PHONY: help build up down restart logs clean fclean re dev prod status shell volumes network clean-all
 
 # Colors for output
 RED = \033[0;31m
@@ -102,6 +102,15 @@ db-reset: ## Destroy DB volume and recreate stack (irreversible: drops all data)
 	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) up -d --build
 	@docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) exec -T backend npm run migrate 2>/dev/null || true
 	@echo "$(GREEN)DB reset completed (fresh schema, empty data).$(NC)"
+
+clean-all: ## Deep clean: remove containers, images, volumes, and prune system (WARNING: removes dangling images/volumes)
+	@echo "$(RED)⚠️  WARNING: This will remove all containers, images, volumes, and prune system!$(NC)"
+	@echo "$(RED)This cannot be undone. Press Ctrl+C to cancel, or wait 3 seconds...$(NC)"
+	@sleep 3
+	@echo "$(BLUE)Executing deep clean...$(NC)"
+	docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE) down -v --remove-orphans
+	docker system prune -f
+	@echo "$(GREEN)Deep clean completed!$(NC)"
 
 re: clean build up ## Rebuild everything from scratch
 

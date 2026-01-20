@@ -2,6 +2,9 @@
 declare const io: any;
 type Socket = any;
 
+// Import i18n
+import { i18n } from './i18n.js';
+
 interface PlayerInfo {
 	alias: string;
 	id: string;
@@ -193,7 +196,7 @@ class PongTournamentApp {
 		this.socket = io(SOCKET_URL, { transports: ['websocket'] });
 
 		this.socket.on('connect', () => {
-			this.updateOnlineStatus('Connected to multiplayer');
+			this.updateOnlineStatus(i18n.t('header.connected'));
 			this.attemptResume();
 		});
 
@@ -202,7 +205,7 @@ class PongTournamentApp {
 		});
 
 		this.socket.on('queue-joined', (data: { position: number }) => {
-			this.updateOnlineStatus(`In queue... (#${data.position})`);
+			this.updateOnlineStatus(`${i18n.t('header.inQueue')} (#${data.position})`);
 		});
 
 		this.socket.on('game-start', (data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }) => {
@@ -678,7 +681,7 @@ class PongTournamentApp {
 		const headerLogout = document.getElementById('logout-btn-header');
 		const user = AuthService.getUser();
 		if (user) {
-			const username = `Logged in as ${user.username}`;
+			const username = `${i18n.t('header.loggedIn')} ${user.username}`;
 			if (el) el.textContent = username;
 			if (headerDisplay) {
 				headerDisplay.textContent = username;
@@ -1493,7 +1496,7 @@ class PongTournamentApp {
 		const arr = raw ? JSON.parse(raw) as any[] : [];
 		container.innerHTML = '';
 		if (!arr || arr.length === 0) {
-			container.innerHTML = '<p>No matches recorded yet.</p>';
+			container.innerHTML = `<p>${i18n.t('stats.noMatches')}</p>`;
 			return;
 		}
 		const table = document.createElement('table');
@@ -2128,10 +2131,39 @@ function consumeGoogleLoginFromHash(): void {
 	}
 }
 
+/**
+ * Apply translations to DOM elements with data-i18n attribute
+ */
+function applyTranslations(): void {
+	document.querySelectorAll('[data-i18n]').forEach((el) => {
+		const key = el.getAttribute('data-i18n');
+		if (key) {
+			el.textContent = i18n.t(key);
+		}
+	});
+}
+
+/**
+ * Setup language switcher on welcome screen
+ */
+function setupLanguageSwitcher(): void {
+	const langBtns = ['en', 'it', 'fr'] as const;
+	langBtns.forEach(lang => {
+		const btn = document.getElementById(`lang-${lang}-btn`);
+		if (btn) {
+			btn.addEventListener('click', () => {
+				i18n.setLanguage(lang);
+			});
+		}
+	});
+}
+
 // Initialize application
 let app: PongTournamentApp;
 document.addEventListener('DOMContentLoaded', () => {
 	consumeGoogleLoginFromHash();
+	applyTranslations();
+	setupLanguageSwitcher();
 	app = new PongTournamentApp();
 	(window as any).app = app; // Make it globally accessible for remove buttons
 });
