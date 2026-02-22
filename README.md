@@ -361,10 +361,16 @@ Main Menu → Click "Multiplayer Quick Game"
 ├─ When 2 players ready → GAME STARTS
 │
 ├─ Controls:
-│  ├─ Player 1 (left): W/S keys
-│  └─ Player 2 (right): Arrow Up/Down
+│  └─ Movement: W/S keys
 │
 ├─ Chat: Type messages, press Enter
+└─ First to 5 points wins
+
+Player 2 → launch "hostname -I | awk '{print $1}'" on main pc
+├─ insert "https://ip:8443"
+├─ Enter matchmaking queue
+├─ Wait for opponent
+├─ When 2 players ready → GAME STARTS
 └─ First to 5 points wins
 ```
 
