@@ -1,7 +1,7 @@
 # Environment variables
 .env
 *.key
-*.cert	
+*.cert
 
 # Dependencies
 node_modules/
