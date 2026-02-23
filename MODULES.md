@@ -231,21 +231,21 @@ Switch language (EN/IT/FR), entire UI translates instantly, language persists af
 
 ## 📊 Summary Table
 
-| # | Module | Type | Points | Status | Implementation |
-|---|--------|------|--------|--------|-----------------|
-| 1 | WebSockets & Real-time | MAJOR | 2 | ✅ | Socket.io, 60 FPS |
-| 2 | Web-based Multiplayer | MAJOR | 2 | ✅ | Pong 1v1, server-authoritative |
-| 3 | AI Opponent | MAJOR | 2 | ✅ | Predictive paddle AI |
-| 4 | Disconnect/Reconnection | MAJOR | 2 | ✅ | 60s grace, resume tokens |
-| 5 | Backend Framework | MINOR | 1 | ✅ | Express.js + TypeScript |
-| 6 | OAuth 2.0 | MINOR | 1 | ✅ | Google authentication |
-| 7 | Tournament System | MINOR | 1 | ✅ | Bracket-based (2-8 players) |
-| 8 | Game Customization | MINOR | 1 | ✅ | Settings, sliders, toggles |
-| 9 | Multi-browser Support | MINOR | 1 | ✅ | Chrome, Firefox, Edge, Opera |
-| 10 | Internationalization | MINOR | 1 | ✅ | EN, IT, FR (3 languages) |
-| | **TOTAL** | | **14** | **✅** | **Production Ready** |
-
----
+|----|-------------------------|-------|---------------------------------|
+| #  |         Module          | Type  |         Implementation          |
+|----|-------------------------|-------|---------------------------------|
+| 1  | WebSockets & Real-time  | MAJOR | Socket.io, 60 FPS               |
+| 2  | Web-based Multiplayer   | MAJOR |  Pong 1v1, server-authoritative |
+| 3  | AI Opponent             | MAJOR |  Predictive paddle AI           |
+| 4  | Disconnect/Reconnection | MAJOR | 60s grace, resume tokens        |
+|----|-------------------------|-------|---------------------------------|
+| 5  | Backend Framework       | MINOR | Express.js + TypeScript         |
+| 6  | OAuth 2.0               | MINOR | Google authentication           |
+| 7  | Tournament System       | MINOR | Bracket-based (2-8 players)     |
+| 8  | Game Customization      | MINOR | Settings, sliders, toggles      |
+| 9  | Multi-browser Support   | MINOR | Chrome, Firefox, Edge, Opera    |
+| 10 | Internationalization    | MINOR | EN, IT, FR (3 languages)        |
+|----|-------------------------|-------|---------------------------------|
 
 ## ✅ Technical Highlights
 
