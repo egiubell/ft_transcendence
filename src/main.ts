@@ -1441,6 +1441,8 @@ class PongTournamentApp {
 	/** Exit current match early and return to main menu */
 	public exitCurrentMatch(): void {
 		this.teardownActiveGame();
+		this.tournamentBracket = { rounds: [], currentRound: 0, currentMatchIndex: 0 };
+		this.currentMatch = null;
 		this.showScreen('welcome-screen');
 	}
 
