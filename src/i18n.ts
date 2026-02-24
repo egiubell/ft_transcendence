@@ -278,6 +278,12 @@ const deTranslations: Translations = {
   "header.loggedIn": "Angemeldet als",
   "header.connected": "Mit Multiplayer verbunden",
   "header.inQueue": "In Warteschlange...",
+  "status.connecting": "Verbinden...",
+  "status.disconnected": "Verbindung getrennt — Wiederverbindungsversuch...",
+  "status.leftMatch": "Spiel verlassen",
+  "status.matchVs": "Spiel gegen {name}",
+  "status.opponentDisconnected": "Gegner getrennt (P{n}). Warte bis zu 60s...",
+  "status.opponentReturned": "Gegner wieder verbunden (P{n}).",
   "auth.login.title": "Login",
   "auth.login.email": "Email",
   "auth.login.password": "Passwort",
@@ -295,6 +301,7 @@ const deTranslations: Translations = {
   "auth.signup.hasAccount": "Bereits einen Account?",
   "auth.signup.login": "Login",
   "welcome.title": "Willkommen zum Pong-Turnier!",
+  "welcome.prefix": "Willkommen zu",
   "welcome.tournament": "Neues Turnier starten",
   "welcome.quickGame": "Multiplayer-Schnellspiel",
   "welcome.singlePlayer": "Einzelspieler",
@@ -339,7 +346,16 @@ const deTranslations: Translations = {
   "menu.play": "Spielen",
   "menu.back": "Zurück",
   "menu.settings": "Einstellungen",
-  "menu.logout": "Abmelden"
+  "menu.logout": "Abmelden",
+  "footer.tagline": "Eine moderne Multiplayer-Pong-Spieleplattform",
+  "footer.legal": "Rechtliches",
+  "footer.privacy": "Datenschutzrichtlinie",
+  "footer.terms": "Nutzungsbedingungen",
+  "footer.contact": "Kontakt",
+  "footer.links": "Links",
+  "footer.github": "GitHub",
+  "footer.help": "Hilfe & Support",
+  "footer.rights": "Alle Rechte vorbehalten."
 };
 
 class I18n {
