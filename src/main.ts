@@ -201,7 +201,7 @@ class PongTournamentApp {
 		});
 
 		this.socket.on('disconnect', () => {
-			this.updateOnlineStatus('Disconnected — attempting to reconnect...');
+			this.updateOnlineStatus(i18n.t('status.disconnected'));
 		});
 
 		this.socket.on('queue-joined', (data: { position: number }) => {
@@ -217,11 +217,15 @@ class PongTournamentApp {
 		});
 
 		this.socket.on('player-disconnected', (data: { playerNumber: number }) => {
-			this.updateOnlineStatus(`Opponent disconnected (P${data.playerNumber}). Waiting up to 60s...`);
+			this.updateOnlineStatus(
+				i18n.t('status.opponentDisconnected').replace('{n}', String(data.playerNumber))
+			);
 		});
 
 		this.socket.on('opponent-returned', (data: { playerNumber: number }) => {
-			this.updateOnlineStatus(`Opponent reconnected (P${data.playerNumber}).`);
+			this.updateOnlineStatus(
+				i18n.t('status.opponentReturned').replace('{n}', String(data.playerNumber))
+			);
 		});
 
 		this.socket.on('resume-failed', (data: { reason: string }) => {
@@ -252,7 +256,7 @@ class PongTournamentApp {
 		if (!this.socket) this.setupSocket();
 		const user = AuthService.getUser();
 		const username = user?.username || user?.email?.split('@')[0] || 'Player';
-		this.updateOnlineStatus('Connecting...');
+		this.updateOnlineStatus(i18n.t('status.connecting'));
 		this.socket?.emit('join-queue', { username });
 		this.showScreen('welcome-screen');
 	}
@@ -263,7 +267,9 @@ class PongTournamentApp {
 		this.remoteRoomId = data.roomId;
 		this.remoteResume = { roomId: data.roomId, token: data.resumeToken, playerNumber: data.playerNumber };
 		this.saveResumeData();
-		this.updateOnlineStatus(`Match vs ${data.opponent}`);
+		this.updateOnlineStatus(
+			i18n.t('status.matchVs').replace('{name}', data.opponent)
+		);
 		this.showChatPanel(true);
 		this.clearChatLog();
 
@@ -1376,10 +1382,12 @@ class PongTournamentApp {
 			btn = document.createElement('button');
 			btn.id = 'settings-btn';
 			btn.className = 'secondary-btn';
-			btn.title = 'Settings';
-			btn.textContent = 'Settings';
 			nav.appendChild(btn);
 		}
+
+		const settingsLabel = i18n.t('header.settings');
+		btn.title = settingsLabel;
+		btn.textContent = settingsLabel;
 
 		// Attach handler if not already attached (use data attr to avoid dupes)
 		if (!(btn.dataset && btn.dataset.handler === '1')) {
@@ -1419,7 +1427,7 @@ class PongTournamentApp {
 		this.remoteOpponent = null;
 		this.remotePlayerIndex = null;
 		this.showChatPanel(false);
-		this.updateOnlineStatus('Left match');
+		this.updateOnlineStatus(i18n.t('status.leftMatch'));
 		document.getElementById('settings-btn')?.removeAttribute('disabled');
 	}
 
