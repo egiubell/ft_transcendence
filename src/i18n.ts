@@ -1,9 +1,9 @@
 // i18n.ts - Internationalization system
 
-type LanguageCode = 'en' | 'it' | 'fr';
+type LanguageCode = 'en' | 'it' | 'fr' | 'de';
 
 interface Translations {
-	[key: string]: string;
+  [key: string]: string;
 }
 
 const enTranslations: Translations = {
@@ -222,62 +222,136 @@ const frTranslations: Translations = {
   "menu.logout": "Déconnexion"
 };
 
+const deTranslations: Translations = {
+  "language": "Deutsch",
+  "header.logout": "Abmelden",
+  "header.settings": "Einstellungen",
+  "header.offline": "Offline",
+  "header.loggedIn": "Angemeldet als",
+  "header.connected": "Mit Multiplayer verbunden",
+  "header.inQueue": "In Warteschlange...",
+  "auth.login.title": "Login",
+  "auth.login.email": "Email",
+  "auth.login.password": "Passwort",
+  "auth.login.button": "Login",
+  "auth.login.noAccount": "Noch keinen Account?",
+  "auth.login.signup": "Registrieren",
+  "auth.google": "Mit Google fortfahren",
+  "auth.signup.title": "Registrieren",
+  "auth.signup.createAccount": "Account erstellen",
+  "auth.signup.email": "Email",
+  "auth.signup.username": "Benutzername",
+  "auth.signup.password": "Passwort",
+  "auth.signup.confirm": "Passwort bestätigen",
+  "auth.signup.button": "Registrieren",
+  "auth.signup.hasAccount": "Bereits einen Account?",
+  "auth.signup.login": "Login",
+  "welcome.title": "Willkommen zum Pong-Turnier!",
+  "welcome.tournament": "Neues Turnier starten",
+  "welcome.quickGame": "Multiplayer-Schnellspiel",
+  "welcome.singlePlayer": "Einzelspieler",
+  "welcome.stats": "Statistiken",
+  "tournament.title": "Turnier-Einstellungen",
+  "tournament.alias": "Geben Sie Ihren Spitznamen ein",
+  "tournament.addPlayer": "Spieler hinzufügen",
+  "tournament.begin": "Turnier starten",
+  "tournament.bracket": "Turnierbaum",
+  "tournament.nextMatch": "Nächstes Spiel starten",
+  "game.waiting": "Warten auf Gegner...",
+  "game.reconnecting": "Wiederverbinden...",
+  "game.disconnected": "Gegner hat die Verbindung getrennt",
+  "game.paused": "Spiel pausiert",
+  "game.resume": "Fortsetzen",
+  "game.quit": "Spiel verlassen",
+  "game.score": "Punktestand",
+  "game.win": "Sie haben gewonnen!",
+  "game.lose": "Sie haben verloren",
+  "game.draw": "Unentschieden",
+  "game.controls": "Tasten W/S zum Bewegen nach oben und unten",
+  "game.chat": "Spiel-Chat",
+  "game.message": "Nachricht senden",
+  "game.send": "Senden",
+  "stats.title": "Statistiken der Spiele (Lokal)",
+  "stats.noData": "Noch keine Daten.",
+  "stats.noMatches": "Noch keine Spiele aufgezeichnet.",
+  "stats.clear": "Lokale Statistiken löschen",
+  "settings.title": "Spieleinstellungen",
+  "settings.powerups": "Power-ups aktivieren",
+  "settings.attacks": "Angriffe aktivieren",
+  "settings.map": "Karte",
+  "settings.mapClassic": "Klassisch",
+  "settings.mapCompact": "Kompakt",
+  "settings.mapExtended": "Erweitert",
+  "settings.ballSpeed": "Ballgeschwindigkeit",
+  "settings.paddleSize": "Schlägergröße",
+  "settings.simpleMode": "Standard (Einfach) Modus",
+  "settings.save": "Speichern",
+  "settings.reset": "Zurücksetzen",
+  "settings.close": "Schließen",
+  "menu.play": "Spielen",
+  "menu.back": "Zurück",
+  "menu.settings": "Einstellungen",
+  "menu.logout": "Abmelden"
+};
+
 class I18n {
-	private currentLanguage: LanguageCode;
-	private translations: { [key in LanguageCode]: Translations } = {
-		en: enTranslations,
-		it: itTranslations,
-		fr: frTranslations
-	};
+  private currentLanguage: LanguageCode;
+  private translations: { [key in LanguageCode]: Translations } = {
+    en: enTranslations,
+    it: itTranslations,
+    fr: frTranslations,
+    de: deTranslations
+  };
 
-	constructor() {
-		// Load language from localStorage or default to 'en'
-		const saved = localStorage.getItem('app_language') as LanguageCode;
-		this.currentLanguage = (saved && this.isValidLanguage(saved)) ? saved : 'en';
-	}
+  constructor() {
+    // Load language from localStorage or default to 'en'
+    const saved = localStorage.getItem('app_language') as LanguageCode;
+    this.currentLanguage = (saved && this.isValidLanguage(saved)) ? saved : 'en';
+  }
 
-	private isValidLanguage(lang: string): lang is LanguageCode {
-		return ['en', 'it', 'fr'].includes(lang);
-	}
+  private isValidLanguage(lang: string): lang is LanguageCode {
+    return ['en', 'it', 'fr', 'de'].includes(lang);
+  }
 
-	/**
-	 * Get translated string by key
-	 */
-	public t(key: string): string {
-		const translation = this.translations[this.currentLanguage][key];
-		return translation || key; // Fallback to key if translation missing
-	}
+  /**
+   * Get translated string by key
+   */
+  public t(key: string): string {
+    const translation = this.translations[this.currentLanguage][key];
+    return translation || key; // Fallback to key if translation missing
+  }
 
-	/**
-	 * Change language and reload page
-	 */
-	public setLanguage(lang: LanguageCode) {
-		if (!this.isValidLanguage(lang)) return;
-		
-		this.currentLanguage = lang;
-		localStorage.setItem('app_language', lang);
-		
-		// Reload page to apply new language
-		window.location.reload();
-	}
+  /**
+   * Change language and reload page
+   */
+  public setLanguage(lang: LanguageCode) {
+    if (!this.isValidLanguage(lang)) return;
 
-	/**
-	 * Get current language
-	 */
-	public getLanguage(): LanguageCode {
-		return this.currentLanguage;
-	}
+    this.currentLanguage = lang;
+    localStorage.setItem('app_language', lang);
 
-	/**
-	 * Get list of available languages
-	 */
-	public getAvailableLanguages(): Array<{ code: LanguageCode; name: string }> {
-		return [
-			{ code: 'en', name: 'English' },
-			{ code: 'it', name: 'Italiano' },
-			{ code: 'fr', name: 'Français' }
-		];
-	}
+    // Reload page to apply new language
+    window.location.reload();
+  }
+
+  /**
+   * Get current language
+   */
+  public getLanguage(): LanguageCode {
+    return this.currentLanguage;
+  }
+
+  /**
+   * Get list of available languages
+   */
+  public getAvailableLanguages(): Array<{ code: LanguageCode; name: string }> {
+    return [
+      { code: 'en', name: 'English' },
+      { code: 'it', name: 'Italiano' },
+      { code: 'fr', name: 'Français' },
+      { code: 'de', name: 'Deutsch' }
+    ];
+  }
 }
 
 // Export singleton instance
