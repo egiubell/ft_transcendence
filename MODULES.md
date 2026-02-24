@@ -1,7 +1,7 @@
 # Module Points Documentation
 
-**Project**: ft_transcendence  
-**Total Points**: 14/14 ✅ COMPLETE  
+**Project**: ft_transcendence
+**Total Points**: 14/14 ✅ COMPLETE
 **Status**: Production Ready
 
 ---
@@ -205,7 +205,7 @@ All features tested and working identically in Chrome, Firefox, Edge, Opera
 Support for multiple languages with full internationalization system.
 
 **Supported Languages**:
-- English (EN), Italiano (IT), Français (FR)
+- English (EN), Italiano (IT), Français (FR), Deutsch (DE)
 
 **Implementation**:
 - Custom i18n.ts singleton module
@@ -225,13 +225,12 @@ Support for multiple languages with full internationalization system.
 - `game.controls`: "W/S keys to move up and down" / "Tasti W/S per muoverti su e giù" / "Touches W/S pour monter et descendre"
 
 **Verification**:
-Switch language (EN/IT/FR), entire UI translates instantly, language persists after reload
+Switch language (EN/IT/FR/DE), entire UI translates instantly, language persists after reload
 
 ---
 
 ## 📊 Summary Table
 
-|----|-------------------------|-------|---------------------------------|
 | #  |         Module          | Type  |         Implementation          |
 |----|-------------------------|-------|---------------------------------|
 | 1  | WebSockets & Real-time  | MAJOR | Socket.io, 60 FPS               |
@@ -244,8 +243,7 @@ Switch language (EN/IT/FR), entire UI translates instantly, language persists af
 | 7  | Tournament System       | MINOR | Bracket-based (2-8 players)     |
 | 8  | Game Customization      | MINOR | Settings, sliders, toggles      |
 | 9  | Multi-browser Support   | MINOR | Chrome, Firefox, Edge, Opera    |
-| 10 | Internationalization    | MINOR | EN, IT, FR (3 languages)        |
-|----|-------------------------|-------|---------------------------------|
+| 10 | Internationalization    | MINOR | EN, IT, FR, DE (4 languages)    |
 
 ## ✅ Technical Highlights
 
@@ -281,9 +279,9 @@ Docker Compose, self-signed SSL, health checks, single-command: `docker compose 
 
 ---
 
-**Status**: ✅ **14/14 Module Points Achieved**  
+**Status**: ✅ **14/14 Module Points Achieved**
 **Ready for Deployment and Evaluation**
 
-See [README.md](README.md) for installation and usage.  
+See [README.md](README.md) for installation and usage.
 See [CONTEXT.md](CONTEXT.md) for technical architecture.
 

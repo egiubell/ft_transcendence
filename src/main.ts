@@ -337,7 +337,7 @@ class PongTournamentApp {
 		this.activeGame = null;
 		const winnerName = data.winner === 1 ? this.remoteOpponent : (AuthService.getUser()?.username || 'You');
 		const score = `${data.finalScore.player1} - ${data.finalScore.player2}`;
-		
+
 		// Save match result to stats
 		this.saveMatchResult({
 			date: new Date().toISOString(),
@@ -459,7 +459,7 @@ class PongTournamentApp {
 			if (headerDisplay) headerDisplay.style.display = 'none';
 			if (headerLogout) headerLogout.style.display = 'none';
 		};
-		
+
 		document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 		document.getElementById('logout-btn-header')?.addEventListener('click', handleLogout);
 
@@ -745,7 +745,7 @@ class PongTournamentApp {
 			if (!appContainer) return;
 
 			const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
-		
+
 			// Fetch and display the policy page
 			fetch(filename)
 				.then(response => {
@@ -756,7 +756,7 @@ class PongTournamentApp {
 					// Create a temporary container for the policy page
 					const tempDiv = document.createElement('div');
 					tempDiv.innerHTML = html;
-				
+
 					// Extract the main content
 					const policyContainer = tempDiv.querySelector('.policy-container');
 					if (!policyContainer) throw new Error('Policy content not found');
@@ -815,7 +815,7 @@ class PongTournamentApp {
 		document.querySelectorAll('.screen').forEach(screen => {
 			screen.classList.remove('active');
 		});
-		
+
 		const targetScreen = document.getElementById(screenId);
 		if (targetScreen) {
 			targetScreen.classList.add('active');
@@ -832,7 +832,7 @@ class PongTournamentApp {
 		} else {
 			this.ensureSettingsButtonExists();
 		}
-		
+
 		// Update browser history for SPA navigation
 		if (pushState) {
 			const title = this.getScreenTitle(screenId);
@@ -889,11 +889,11 @@ class PongTournamentApp {
 			alias: sanitizedAlias,
 			id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
 		};
-		
+
 		this.registeredPlayers.push(newPlayer);
 		this.updatePlayerDisplay();
 		aliasInput.value = '';
-		
+
 		// Update tournament start button state (requires even number of players)
 		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
 		if (beginBtn) {
@@ -919,20 +919,20 @@ class PongTournamentApp {
 
 		// Use safe DOM manipulation instead of innerHTML
 		playersDiv.innerHTML = '';
-		
+
 		this.registeredPlayers.forEach((player) => {
 			const playerTag = document.createElement('span');
 			playerTag.className = 'player-tag';
-			
+
 			const playerName = document.createElement('span');
 			playerName.textContent = player.alias;
-			
+
 			const removeBtn = document.createElement('button');
 			removeBtn.className = 'remove-btn';
 			removeBtn.textContent = '×';
 			removeBtn.title = `Remove ${player.alias}`;
 			removeBtn.addEventListener('click', () => this.removePlayer(player.id));
-			
+
 			playerTag.appendChild(playerName);
 			playerTag.appendChild(removeBtn);
 			playersDiv.appendChild(playerTag);
@@ -942,10 +942,10 @@ class PongTournamentApp {
 	public removePlayer(playerId: string): void {
 		// Sanitize player ID
 		const sanitizedId = this.sanitizeInput(playerId);
-		
+
 		this.registeredPlayers = this.registeredPlayers.filter(p => p.id !== sanitizedId);
 		this.updatePlayerDisplay();
-		
+
 		// Update tournament start button state (requires even number of players)
 		const beginBtn = document.getElementById('begin-tournament-btn') as HTMLButtonElement;
 		if (beginBtn) {
@@ -975,7 +975,7 @@ class PongTournamentApp {
 
 	private generateTournamentBracket(): void {
 		const players = [...this.registeredPlayers];
-		
+
 		// Shuffle players for fair bracket using Fisher-Yates algorithm
 		for (let i = players.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
@@ -991,7 +991,7 @@ class PongTournamentApp {
 		// Handle odd number of players - give bye to one player
 		let currentPlayers = [...players];
 		let byePlayer: PlayerInfo | null = null;
-		
+
 		if (currentPlayers.length % 2 === 1) {
 			byePlayer = currentPlayers.pop()!;
 		}
@@ -1030,61 +1030,61 @@ class PongTournamentApp {
 
 		const bracketContainer = document.createElement('div');
 		bracketContainer.className = 'tournament-bracket';
-		
+
 		// Display all rounds
 		this.tournamentBracket.rounds.forEach((round, roundIndex) => {
 			const roundDiv = document.createElement('div');
 			roundDiv.className = 'round';
-			
+
 			const roundTitle = document.createElement('h3');
 			roundTitle.textContent = `Round ${roundIndex + 1}`;
 			roundDiv.appendChild(roundTitle);
-			
+
 			const matchesDiv = document.createElement('div');
 			matchesDiv.className = 'matches';
-			
+
 			round.forEach((match, matchIndex) => {
-				const isCurrentMatch = roundIndex === this.tournamentBracket.currentRound && 
+				const isCurrentMatch = roundIndex === this.tournamentBracket.currentRound &&
 									 matchIndex === this.tournamentBracket.currentMatchIndex;
 				const isCompleted = !!match.winner;
-				
+
 				const matchDiv = document.createElement('div');
 				matchDiv.className = `match ${isCurrentMatch ? 'current' : ''} ${isCompleted ? 'completed' : ''}`;
-				
+
 				const playersDiv = document.createElement('div');
 				playersDiv.className = 'match-players';
-				
+
 				const player1Span = document.createElement('span');
 				player1Span.textContent = match.player1.alias;
 				if (match.winner?.id === match.player1.id) {
 					player1Span.className = 'winner';
 				}
-			
+
 				const vsSpan = document.createElement('span');
 				vsSpan.className = 'vs';
 				vsSpan.textContent = 'vs';
-				
+
 				const player2Span = document.createElement('span');
 				player2Span.textContent = match.player2.alias;
 				if (match.winner?.id === match.player2.id) {
 					player2Span.className = 'winner';
 				}
-				
+
 				playersDiv.appendChild(player1Span);
 				playersDiv.appendChild(vsSpan);
 				playersDiv.appendChild(player2Span);
 				matchDiv.appendChild(playersDiv);
-				
+
 				if (match.winner) {
 					const resultDiv = document.createElement('div');
 					resultDiv.className = 'match-result';
 					resultDiv.textContent = `Winner: ${match.winner.alias}`;
 					matchDiv.appendChild(resultDiv);
 				}
-				
+
 				matchesDiv.appendChild(matchDiv);
 			});
-			
+
 			roundDiv.appendChild(matchesDiv);
 			bracketContainer.appendChild(roundDiv);
 		});
@@ -1094,18 +1094,18 @@ class PongTournamentApp {
 		for (let i = this.tournamentBracket.rounds.length; i < totalRounds; i++) {
 			const futureRoundDiv = document.createElement('div');
 			futureRoundDiv.className = 'round future';
-			
+
 			const futureTitle = document.createElement('h3');
 			futureTitle.textContent = `Round ${i + 1}`;
 			futureRoundDiv.appendChild(futureTitle);
-			
+
 			const futureMatches = document.createElement('div');
 			futureMatches.className = 'matches';
-			
+
 			const pendingMatch = document.createElement('div');
 			pendingMatch.className = 'match pending';
 			pendingMatch.textContent = 'TBD';
-			
+
 			futureMatches.appendChild(pendingMatch);
 			futureRoundDiv.appendChild(futureMatches);
 			bracketContainer.appendChild(futureRoundDiv);
@@ -1120,15 +1120,15 @@ class PongTournamentApp {
 
 	private displayTournamentStatus(parentDiv: HTMLElement): void {
 		const statusDiv = document.createElement('div');
-		
+
 		if (this.isTournamentComplete()) {
 			const winner = this.getTournamentWinner();
 			statusDiv.className = 'tournament-status final';
-			
+
 			const winnerTitle = document.createElement('h2');
 			winnerTitle.textContent = `🏆 Tournament Winner: ${winner?.alias}! 🏆`;
 			statusDiv.appendChild(winnerTitle);
-			
+
 			const newTournamentBtn = document.createElement('button');
 			newTournamentBtn.className = 'primary-btn';
 			newTournamentBtn.textContent = 'New Tournament';
@@ -1139,17 +1139,17 @@ class PongTournamentApp {
 			if (currentRound && this.tournamentBracket.currentMatchIndex < currentRound.length) {
 				const nextMatch = currentRound[this.tournamentBracket.currentMatchIndex];
 				statusDiv.className = 'tournament-status';
-				
+
 				const nextTitle = document.createElement('h3');
 				nextTitle.textContent = 'Next Match:';
 				statusDiv.appendChild(nextTitle);
-				
+
 				const matchInfo = document.createElement('p');
 				matchInfo.textContent = `${nextMatch.player1.alias} vs ${nextMatch.player2.alias}`;
 				statusDiv.appendChild(matchInfo);
 			}
 		}
-		
+
 		if (statusDiv.children.length > 0) {
 			parentDiv.appendChild(statusDiv);
 		}
@@ -1185,7 +1185,7 @@ class PongTournamentApp {
 
 	private advanceToNextRound(): void {
 		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
-		
+
 		// Get winners from current round
 		const winners = currentRound
 			.filter(match => match.winner)
@@ -1221,16 +1221,16 @@ class PongTournamentApp {
 	private isTournamentComplete(): boolean {
 		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
 		if (!currentRound) return false;
-		
+
 		const completedMatches = currentRound.filter(match => match.winner).length;
 		const isCurrentRoundComplete = completedMatches === currentRound.length;
-		
+
 		return isCurrentRoundComplete && currentRound.length === 1;
 	}
 
 	private getTournamentWinner(): PlayerInfo | null {
 		if (!this.isTournamentComplete()) return null;
-		
+
 		const finalRound = this.tournamentBracket.rounds[this.tournamentBracket.rounds.length - 1];
 		return finalRound[0]?.winner || null;
 	}
@@ -1273,12 +1273,12 @@ class PongTournamentApp {
 	private startPongGame(player1: PlayerInfo, player2: PlayerInfo): void {
 		const player1Name = document.getElementById('player1-name');
 		const player2Name = document.getElementById('player2-name');
-		
+
 		if (player1Name) player1Name.textContent = player1.alias;
 		if (player2Name) player2Name.textContent = player2.alias;
-		
+
 		this.showScreen('game-arena');
-		
+
 		const pongGame = new PongGameEngine();
 		// Keep reference so we can stop the match early
 		this.activeGame = pongGame;
@@ -1458,7 +1458,7 @@ class PongTournamentApp {
 		if (!this.currentMatch) return;
 
 		const winner = winnerIndex === 1 ? this.currentMatch.player1 : this.currentMatch.player2;
-		
+
 		// Update tournament match
 		const currentRound = this.tournamentBracket.rounds[this.tournamentBracket.currentRound];
 		if (currentRound && currentRound.length > 0) {
@@ -1467,7 +1467,7 @@ class PongTournamentApp {
 				currentRound[matchIndex].winner = winner;
 				this.tournamentBracket.currentMatchIndex++;
 			}
-			
+
 			this.showScreen('tournament-bracket');
 			this.displayBracket();
 		} else {
@@ -1541,7 +1541,7 @@ class PongGameEngine {
 	private remoteMode: boolean = false;
 	private remotePlayerIndex: 0 | 1 | null = null;
 	private onRemoteMove?: (y: number) => void;
-	
+
 	public onGameComplete?: (winner: number) => void;
 	private options: GameSettings = DEFAULT_SETTINGS;
 	private keyHandlers: { keyDown: (e: KeyboardEvent) => void; keyUp: (e: KeyboardEvent) => void } | null = null;
@@ -1619,17 +1619,17 @@ class PongGameEngine {
 			console.error('Canvas element not found');
 			return;
 		}
-		
+
 		const context = this.canvas.getContext('2d');
 		if (!context) {
 			console.error('Cannot get 2D context');
 			return;
 		}
-		
+
 		this.ctx = context;
 		this.setupControls();
 		this.resizeCanvas();
-		
+
 		// Handle window resize for responsiveness
 		window.addEventListener('resize', () => {
 			this.resizeCanvas();
@@ -1640,11 +1640,11 @@ class PongGameEngine {
 		// Get container width (max 95% of viewport)
 		const maxWidth = Math.min(window.innerWidth * 0.95, 1000);
 		const aspectRatio = this.getAspectRatio();
-		
+
 		// Set canvas size based on options map
 		let baseWidth: number;
 		let baseHeight: number;
-		
+
 		if (this.options.map === 'compact') {
 			baseWidth = 640;
 			baseHeight = 320;
@@ -1655,7 +1655,7 @@ class PongGameEngine {
 			baseWidth = 800;
 			baseHeight = 400;
 		}
-		
+
 		// Scale down if viewport is narrower
 		if (baseWidth > maxWidth) {
 			const scale = maxWidth / baseWidth;
@@ -1665,7 +1665,7 @@ class PongGameEngine {
 			this.canvas.width = baseWidth;
 			this.canvas.height = baseHeight;
 		}
-		
+
 		// Re-apply paddle heights based on canvas in case sizes changed
 		this.gameState.paddle1.height = this.options.paddleSize;
 		this.gameState.paddle2.height = this.options.paddleSize;
@@ -1907,7 +1907,7 @@ class PongGameEngine {
 
 	private setupControls(): void {
 		const keysPressed: { [key: string]: boolean } = {};
-		
+
 		const keyDownHandler = (e: KeyboardEvent) => {
 			const key = e.key.toLowerCase();
 			// Only handle game keys to prevent conflicts
@@ -1916,7 +1916,7 @@ class PongGameEngine {
 				e.preventDefault();
 			}
 		};
-		
+
 		const keyUpHandler = (e: KeyboardEvent) => {
 			const key = e.key.toLowerCase();
 			if (['w', 's', 'arrowup', 'arrowdown'].includes(key)) {
@@ -1927,7 +1927,7 @@ class PongGameEngine {
 
 		// Store handlers for cleanup
 		this.keyHandlers = { keyDown: keyDownHandler, keyUp: keyUpHandler };
-		
+
 		document.addEventListener('keydown', keyDownHandler);
 		document.addEventListener('keyup', keyUpHandler);
 
@@ -1956,7 +1956,7 @@ class PongGameEngine {
 			if (keysPressed['s'] && this.gameState.paddle1.y < this.canvas.height - this.gameState.paddle1.height) {
 				this.gameState.paddle1.y += this.gameState.paddle1.speed;
 			}
-			
+
 			// Player 2 controls (Arrow keys)
 			if (keysPressed['arrowup'] && this.gameState.paddle2.y > 0) {
 				this.gameState.paddle2.y -= this.gameState.paddle2.speed;
@@ -1990,7 +1990,7 @@ class PongGameEngine {
 			clearInterval(this.paddleInterval);
 			this.paddleInterval = null;
 		}
-		
+
 		if (this.keyHandlers) {
 			document.removeEventListener('keydown', this.keyHandlers.keyDown);
 			document.removeEventListener('keyup', this.keyHandlers.keyUp);
@@ -2018,7 +2018,7 @@ class PongGameEngine {
 		}
 		this.draw();
 		this.checkScore();
-		
+
 		requestAnimationFrame(() => this.gameLoop());
 	}
 
@@ -2053,15 +2053,15 @@ class PongGameEngine {
 		const p2 = this.gameState.paddle2;
 
 		// Left paddle collision
-		const leftPaddleCollision = ball.x - ball.size <= p1.x + p1.width && 
-								  ball.y >= p1.y && 
-								  ball.y <= p1.y + p1.height && 
+		const leftPaddleCollision = ball.x - ball.size <= p1.x + p1.width &&
+								  ball.y >= p1.y &&
+								  ball.y <= p1.y + p1.height &&
 								  ball.dx < 0;
 
 		// Right paddle collision
-		const rightPaddleCollision = ball.x + ball.size >= p2.x && 
-								   ball.y >= p2.y && 
-								   ball.y <= p2.y + p2.height && 
+		const rightPaddleCollision = ball.x + ball.size >= p2.x &&
+								   ball.y >= p2.y &&
+								   ball.y <= p2.y + p2.height &&
 								   ball.dx > 0;
 
 		return leftPaddleCollision || rightPaddleCollision;
@@ -2091,9 +2091,9 @@ class PongGameEngine {
 
 		// Draw paddles
 		this.ctx.fillStyle = '#fff';
-		this.ctx.fillRect(this.gameState.paddle1.x, this.gameState.paddle1.y, 
+		this.ctx.fillRect(this.gameState.paddle1.x, this.gameState.paddle1.y,
 						 this.gameState.paddle1.width, this.gameState.paddle1.height);
-		this.ctx.fillRect(this.gameState.paddle2.x, this.gameState.paddle2.y, 
+		this.ctx.fillRect(this.gameState.paddle2.x, this.gameState.paddle2.y,
 						 this.gameState.paddle2.width, this.gameState.paddle2.height);
 
 		// Draw ball
@@ -2157,12 +2157,13 @@ function applyTranslations(): void {
  * Setup language switcher on welcome screen
  */
 function setupLanguageSwitcher(): void {
-	const langBtns = ['en', 'it', 'fr'] as const;
+	const langBtns = ['en', 'it', 'fr', 'de'] as const;
 	langBtns.forEach(lang => {
 		const btn = document.getElementById(`lang-${lang}-btn`);
 		if (btn) {
 			btn.addEventListener('click', () => {
 				i18n.setLanguage(lang);
+				applyTranslations();
 			});
 		}
 		const authBtn = document.getElementById(`lang-${lang}-btn-auth`);

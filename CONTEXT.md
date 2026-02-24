@@ -1,7 +1,7 @@
 # Project Technical Context & Architecture
 
-**Last Updated**: January 20, 2026  
-**Project Status**: ✅ COMPLETE (14/14 module points)  
+**Last Updated**: January 20, 2026
+**Project Status**: ✅ COMPLETE (14/14 module points)
 **Deployment**: Docker Compose (make re)
 
 ---
@@ -43,38 +43,39 @@ ft_transcendence/
 ├── nginx-config.conf           # Reverse proxy + SPA routing + CSP
 ├── Dockerfile                  # Frontend image (nginx:8080)
 ├── package.json                # Root dependencies
-├── tsconfig.json              # Shared TypeScript config
+├── tsconfig.json               # Shared TypeScript config
 │
 ├── src/                        # FRONTEND (TypeScript + HTML)
-│   ├── main.ts               # PongTournamentApp class (SPA core)
-│   ├── index.html            # SPA root (all screens)
-│   ├── content-area.html     # Legacy (unused)
-│   ├── privacy-policy.html   # Legal page
-│   ├── terms-of-service.html # Legal page
+│   ├── main.ts                 # PongTournamentApp class (SPA core)
+│   ├── index.html              # SPA root (all screens)
+│   ├── i18n.ts                 # Translation (i18n)
+│   ├── content-area.html       # Legacy (unused)
+│   ├── privacy-policy.html     # Legal page
+│   ├── terms-of-service.html   # Legal page
 │   └── styles/
-│       ├── app.css          # Main game UI + chat styling
-│       └── auth.css         # Auth form styling
+│       ├── app.css             # Main game UI + chat styling
+│       └── auth.css            # Auth form styling
 │
 ├── backend/                    # BACKEND (Node.js)
-│   ├── package.json           # Dependencies, build scripts
-│   ├── tsconfig.json          # TypeScript config
-│   ├── Dockerfile             # Backend image (node:20)
+│   ├── package.json            # Dependencies, build scripts
+│   ├── tsconfig.json           # TypeScript config
+│   ├── Dockerfile              # Backend image (node:20)
 │   │
 │   └── src/
-│       ├── index.ts          # Express server, routes, CORS, Socket.io
-│       ├── db/               # Database
-│       │   ├── connection.ts # PostgreSQL client init
-│       │   └── init.ts       # Schema creation (users, game_stats, game_history)
-│       ├── routes/           # HTTP endpoints
-│       │   ├── auth-new.ts  # Signup, login, JWT verify
-│       │   ├── games.ts     # Match history, stats
-│       │   └── users.ts     # User profile info
-│       ├── utils/            # Helper functions
-│       │   ├── auth.ts      # JWT token generation/verification
-│       │   ├── user.ts      # Fetch user from DB
-│       │   └── validation.ts # Email, password validation
+│       ├── index.ts            # Express server, routes, CORS, Socket.io
+│       ├── db/                 # Database
+│       │   ├── connection.ts   # PostgreSQL client init
+│       │   └── init.ts         # Schema creation (users, game_stats, game_history)
+│       ├── routes/             # HTTP endpoints
+│       │   ├── auth-new.ts     # Signup, login, JWT verify
+│       │   ├── games.ts        # Match history, stats
+│       │   └── users.ts        # User profile info
+│       ├── utils/              # Helper functions
+│       │   ├── auth.ts         # JWT token generation/verification
+│       │   ├── user.ts         # Fetch user from DB
+│       │   └── validation.ts   # Email, password validation
 │       └── websocket/
-│           └── gameServer.ts # Socket.io logic (matchmaking, physics, chat)
+│           └── gameServer.ts   # Socket.io logic (matchmaking, physics, chat)
 │
 └── subject/                    # 42 school requirements (reference)
 ```
@@ -332,7 +333,7 @@ make re     # Builds images, starts containers, initializes DB
 
 ### Architecture
 - **Singleton Pattern**: Single global `i18n` instance exported
-- **Language Support**: English (EN), Italian (IT), French (FR)
+- **Language Support**: English (EN), Italian (IT), French (FR), German (DE)
 - **Translation Keys**: 80+ keys organized by feature
 - **Persistence**: localStorage key `app_language`
 - **No External Dependencies**: Inlined translation objects (no JSON imports)
@@ -364,14 +365,14 @@ const enTranslations = {
 import { i18n } from './i18n.js'
 
 // Translate a key
-const text = i18n.t('header.loggedIn')  // "Logged in as" (or IT/FR equivalent)
+const text = i18n.t('header.loggedIn')  // "Logged in as" (or IT/FR/DE equivalent)
 
 // Switch language
 i18n.setLanguage('it')          // Switch to Italian
 window.location.reload()         // Reload to apply
 
 // Get available languages
-const langs = i18n.getAvailableLanguages()  // ['en', 'it', 'fr']
+const langs = i18n.getAvailableLanguages()  // ['en', 'it', 'fr', 'de']
 ```
 
 ### HTML Integration
@@ -396,6 +397,7 @@ socket.on('connect', () => {
 | English | EN | ✅ Default | 80+ |
 | Italiano | IT | ✅ Complete | 80+ |
 | Français | FR | ✅ Complete | 80+ |
+| Deutsch | DE | ✅ Complete | 80+ |
 
 ### Application Flow
 1. **Page Load** → Detect browser language or get from localStorage
