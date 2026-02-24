@@ -2165,6 +2165,12 @@ function setupLanguageSwitcher(): void {
 				i18n.setLanguage(lang);
 			});
 		}
+		const authBtn = document.getElementById(`lang-${lang}-btn-auth`);
+		if (authBtn) {
+			authBtn.addEventListener('click', () => {
+				i18n.setLanguage(lang);
+			});
+		}
 	});
 }
 

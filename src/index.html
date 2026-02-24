@@ -28,7 +28,7 @@
             <!-- Auth Screen -->
             <div id="auth-screen" class="screen">
                 <div class="flex items-center justify-center min-h-full">
-                <div class="auth-container bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+                <div class="auth-container bg-gray-800 rounded-2xl shadow-2xl p-8 pb-12 w-full max-w-md border border-gray-700 relative">
                     <h1 class="auth-title text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏓 Pong Tournament</h1>
                     <form id="login-form" class="auth-form active space-y-4">
                         <h2 class="text-2xl font-bold text-center text-white mb-4" data-i18n="auth.login.title">Login</h2>
@@ -45,6 +45,12 @@
                             <span data-i18n="auth.login.noAccount">Don't have an account?</span> <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold" data-i18n="auth.login.signup">Sign up</a>
                         </p>
                         <button type="button" id="google-login-btn" class="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold transition flex items-center justify-center gap-2" style="width:100%" data-i18n="auth.google">🔑 Continue with Google</button>
+                        <!-- Language Selector -->
+                        <div class="flex justify-center gap-2 mt-4">
+                            <button id="lang-en-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="English">EN</button>
+                            <button id="lang-it-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Italiano">IT</button>
+                            <button id="lang-fr-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
+                        </div>
                         <div id="login-error" class="error-message text-red-400 text-sm text-center"></div>
                     </form>
 
@@ -86,7 +92,9 @@
                     <button id="lang-fr-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
                 </div>
                 
-                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" id="welcome-title">Welcome to Pong Tournament!</h2>
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" id="welcome-title">
+                    <span data-i18n="welcome.prefix">Welcome to</span> Pong Tournament!
+                </h2>
                 <button id="start-tournament-btn" class="primary-btn w-full max-w-md py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg" data-i18n="welcome.tournament">Start New Tournament</button>
                 <button id="quick-game-btn" class="w-full max-w-md py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.quickGame">Multiplayer Quick Game</button>
                 <button id="single-player-btn" class="w-full max-w-md py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.singlePlayer">Single Player</button>
@@ -190,26 +198,26 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Pong Tournament</h3>
-                    <p>A modern multiplayer Pong gaming platform</p>
+                    <p data-i18n="footer.tagline">A modern multiplayer Pong gaming platform</p>
                 </div>
                 <div class="footer-section">
-                    <h3>Legal</h3>
+                    <h3 data-i18n="footer.legal">Legal</h3>
                     <ul>
-                        <li><a href="#privacy-policy" class="footer-link">Privacy Policy</a></li>
-                        <li><a href="#terms-of-service" class="footer-link">Terms of Service</a></li>
-                        <li><a href="#contact" class="footer-link">Contact</a></li>
+                        <li><a href="#privacy-policy" class="footer-link" data-i18n="footer.privacy">Privacy Policy</a></li>
+                        <li><a href="#terms-of-service" class="footer-link" data-i18n="footer.terms">Terms of Service</a></li>
+                        <li><a href="#contact" class="footer-link" data-i18n="footer.contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Links</h3>
+                    <h3 data-i18n="footer.links">Links</h3>
                     <ul>
-                        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                        <li><a href="#help" class="footer-link">Help & Support</a></li>
+                        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" data-i18n="footer.github">GitHub</a></li>
+                        <li><a href="#help" class="footer-link" data-i18n="footer.help">Help & Support</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Pong Tournament. All rights reserved.</p>
+                <p>&copy; 2025 Pong Tournament. <span data-i18n="footer.rights">All rights reserved.</span></p>
             </div>
         </footer>
     </div>

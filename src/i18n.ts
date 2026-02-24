@@ -37,6 +37,7 @@ const enTranslations: Translations = {
   "auth.signup.hasAccount": "Already have an account?",
   "auth.signup.login": "Login",
   "welcome.title": "Welcome to Pong Tournament!",
+  "welcome.prefix": "Welcome to",
   "welcome.tournament": "Start New Tournament",
   "welcome.quickGame": "Multiplayer Quick Game",
   "welcome.singlePlayer": "Single Player",
@@ -81,7 +82,16 @@ const enTranslations: Translations = {
   "menu.play": "Play",
   "menu.back": "Back",
   "menu.settings": "Settings",
-  "menu.logout": "Logout"
+  "menu.logout": "Logout",
+  "footer.tagline": "A modern multiplayer Pong gaming platform",
+  "footer.legal": "Legal",
+  "footer.privacy": "Privacy Policy",
+  "footer.terms": "Terms of Service",
+  "footer.contact": "Contact",
+  "footer.links": "Links",
+  "footer.github": "GitHub",
+  "footer.help": "Help & Support",
+  "footer.rights": "All rights reserved."
 };
 
 const itTranslations: Translations = {
@@ -115,6 +125,7 @@ const itTranslations: Translations = {
   "auth.signup.hasAccount": "Hai già un account?",
   "auth.signup.login": "Accedi",
   "welcome.title": "Benvenuto al Torneo di Pong!",
+  "welcome.prefix": "Benvenuto a",
   "welcome.tournament": "Inizia Nuovo Torneo",
   "welcome.quickGame": "Partita Rapida Multiplayer",
   "welcome.singlePlayer": "Giocatore Singolo",
@@ -159,7 +170,16 @@ const itTranslations: Translations = {
   "menu.play": "Gioca",
   "menu.back": "Indietro",
   "menu.settings": "Impostazioni",
-  "menu.logout": "Esci"
+  "menu.logout": "Esci",
+  "footer.tagline": "Una piattaforma moderna per il Pong multiplayer",
+  "footer.legal": "Legale",
+  "footer.privacy": "Privacy Policy",
+  "footer.terms": "Termini di Servizio",
+  "footer.contact": "Contatti",
+  "footer.links": "Link",
+  "footer.github": "GitHub",
+  "footer.help": "Aiuto e Supporto",
+  "footer.rights": "Tutti i diritti riservati."
 };
 
 const frTranslations: Translations = {
@@ -193,6 +213,7 @@ const frTranslations: Translations = {
   "auth.signup.hasAccount": "Vous avez déjà un compte?",
   "auth.signup.login": "Se connecter",
   "welcome.title": "Bienvenue au Tournoi Pong!",
+  "welcome.prefix": "Bienvenue à",
   "welcome.tournament": "Démarrer un nouveau tournoi",
   "welcome.quickGame": "Jeu rapide multijoueur",
   "welcome.singlePlayer": "Joueur unique",
@@ -237,7 +258,16 @@ const frTranslations: Translations = {
   "menu.play": "Jouer",
   "menu.back": "Retour",
   "menu.settings": "Paramètres",
-  "menu.logout": "Déconnexion"
+  "menu.logout": "Déconnexion",
+  "footer.tagline": "Une plateforme moderne de Pong multijoueur",
+  "footer.legal": "Mentions légales",
+  "footer.privacy": "Politique de confidentialité",
+  "footer.terms": "Conditions d'utilisation",
+  "footer.contact": "Contact",
+  "footer.links": "Liens",
+  "footer.github": "GitHub",
+  "footer.help": "Aide et support",
+  "footer.rights": "Tous droits réservés."
 };
 
 class I18n {
