@@ -34,7 +34,7 @@
 - 🎮 **Real-time Multiplayer** - 60 FPS server-authoritative gameplay
 - 🤖 **AI Opponent** - Smart single-player mode with difficulty levels
 - 🔌 **Auto-Reconnection** - 60-second grace window for seamless resumption
-- 🌐 **Multi-language** - English, Italian, French (80+ translated elements)
+- 🌐 **Multi-language** - English, Italian, French, German (80+ translated elements)
 - 🔐 **OAuth 2.0** - Google authentication + email/password
 - 🏆 **Tournament System** - Bracket-based competitions (2-8 players)
 - 🐳 **Single-Command Deploy** - Docker Compose with HTTPS
@@ -45,36 +45,36 @@
 
 ### Major Features (8 points)
 
-- **🎮 Real-time Multiplayer Pong** (2 pts)  
+- **🎮 Real-time Multiplayer Pong** (2 pts)
   Play 1v1 matches against other users with 60 FPS server-author itative physics and seamless synchronization.
 
-- **💬 Real-time WebSockets** (2 pts)  
+- **💬 Real-time WebSockets** (2 pts)
   Socket.io integration for instant communication, game state updates, and in-match chat.
 
-- **🤖 AI Opponent** (2 pts)  
+- **🤖 AI Opponent** (2 pts)
   Intelligent AI with predictive paddle movement and configurable difficulty (Easy/Medium/Hard).
 
-- **🔌 Automatic Reconnection** (2 pts)  
+- **🔌 Automatic Reconnection** (2 pts)
   60-second grace window for automatic match resumption without data loss. Resume tokens and state persistence.
 
 ### Minor Features (6 points)
 
-- **🔐 OAuth 2.0 Authentication** (1 pt)  
+- **🔐 OAuth 2.0 Authentication** (1 pt)
   Secure email/password signup and Google login with JWT tokens.
 
-- **📊 Backend Framework** (1 pt)  
+- **📊 Backend Framework** (1 pt)
   Express.js with full REST API, type safety, middleware, and database integration.
 
-- **🎪 Tournament System** (1 pt)  
+- **🎪 Tournament System** (1 pt)
   Bracket-based tournaments for 2-8 players with automatic progression and winner tracking.
 
-- **⚙️ Game Customization** (1 pt)  
+- **⚙️ Game Customization** (1 pt)
   Adjust ball speed, paddle size, maps, power-ups, attacks, and AI difficulty.
 
-- **🌐 Multi-language Support** (1 pt)  
-  English, Italian, and French with automatic language switching and localStorage persistence.
+- **🌐 Multi-language Support** (1 pt)
+  English, Italian, French and German with automatic language switching and localStorage persistence.
 
-- **📱 Multi-browser Support** (1 pt)  
+- **📱 Multi-browser Support** (1 pt)
   Tested and verified on Chrome, Firefox, Edge, and Opera - fully compatible.
 
 ---
@@ -228,7 +228,8 @@ Click "Settings" icon → Adjust:
 Welcome Screen → Language buttons:
 ├─ 🇬🇧 EN (English)
 ├─ 🇮🇹 IT (Italiano)
-└─ 🇫🇷 FR (Français)
+├─ 🇫🇷 FR (Français)
+└─ 🇩🇪 DE (Deutsch)
 ```
 
 ---
@@ -491,7 +492,6 @@ ft_transcendence/
 │   ├── index.html          # SPA root
 │   ├── main.ts             # App logic (~2000 lines)
 │   ├── i18n.ts             # Internationalization
-│   ├── i18n/               # Translation files (EN/IT/FR)
 │   └── styles/             # CSS files
 │
 └── backend/                # Node.js backend
@@ -516,7 +516,7 @@ ft_transcendence/
 - **HTML5 Canvas** - 60 FPS game rendering
 - **Socket.io-client** - Real-time WebSocket
 - **Tailwind CSS** - Responsive UI
-- **Custom i18n** - 3 languages (EN, IT, FR)
+- **Custom i18n** - 3 languages (EN, IT, FR, DE)
 
 ### Backend
 
@@ -542,7 +542,7 @@ If you've completed the setup, your **ft_transcendence** application is now runn
 
 **What's next?**:
 - ✅ Try all 3 game modes (Single, Multi, Tournament)
-- ✅ Test language switching (EN, IT, FR)
+- ✅ Test language switching (EN, IT, FR, DE)
 - ✅ Explore game customization
 - ✅ Check statistics
 - ✅ Test reconnection (close/reopen tab)
