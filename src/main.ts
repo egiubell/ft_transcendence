@@ -262,23 +262,38 @@ class PongTournamentApp {
 		this.showScreen('welcome-screen');
 	}
 
-	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }): void {
+	private setupRemoteGame(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }): void {
 		this.remotePlayerIndex = data.playerNumber === 1 ? 0 : 1;
 		this.remoteOpponent = data.opponent;
 		this.remoteRoomId = data.roomId;
 		this.remoteResume = { roomId: data.roomId, token: data.resumeToken, playerNumber: data.playerNumber };
 		this.saveResumeData();
-		this.updateOnlineStatus(
-			i18n.t('status.matchVs').replace('{name}', data.opponent)
-		);
-		this.showChatPanel(true);
-		this.clearChatLog();
+		const localPlayer: PlayerInfo = {
+			alias: AuthService.getUser()?.username || 'You',
+			id: `local-${data.roomId}`
+		};
+
+		const remotePlayer: PlayerInfo = {
+			alias: data.opponent || 'Opponent',
+			id: `remote-${data.roomId}`
+		};
+
+		const match: GameMatch = {
+			player1: data.playerNumber === 1 ? localPlayer : remotePlayer,
+			player2: data.playerNumber === 2 ? localPlayer : remotePlayer,
+			matchId: data.roomId,
+			round: 0
+		}
+		const player1Name = document.getElementById(`player1-name`);
+		const player2Name = document.getElementById(`player2-name`);
+		if (player1Name) player1Name.textContent = match.player1.alias;
+		if (player2Name) player2Name.textContent = match.player2.alias;
+		this.currentMatch = match;
 
 		const engine = new PongGameEngine();
 		this.remoteEngine = engine;
 		this.activeGame = engine;
-		const settings = this.loadSettings();
-		engine.applySettings(settings);
+		engine.applySettings(DEFAULT_SETTINGS);
 		engine.enableRemoteMode(this.remotePlayerIndex, (y: number) => {
 			this.socket?.emit('paddle-move', { y });
 		});
@@ -286,40 +301,28 @@ class PongTournamentApp {
 		engine.setCanvasSize(data.canvasWidth, data.canvasHeight);
 		engine.play();
 
+
+		this.showChatPanel(true);
+	}
+
+	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }): void {
+		console.log('Game started', data);
+		this.updateOnlineStatus(
+			i18n.t('status.matchVs').replace('{name}', data.opponent)
+		);
+		this.clearChatLog();
+		this.setupRemoteGame(data);
 		this.showScreen('game-arena');
 	}
 
 	private handleGameResumed(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; state: RemoteGameState }): void {
-		// Update resume info
-		this.remotePlayerIndex = data.playerNumber === 1 ? 0 : 1;
-		this.remoteOpponent = data.opponent;
-		this.remoteRoomId = data.roomId;
 		const existingToken = this.remoteResume?.token || this.loadResumeData()?.token || '';
-		this.remoteResume = { roomId: data.roomId, token: existingToken, playerNumber: data.playerNumber };
-		this.saveResumeData();
-
-		// Create engine if missing
-		if (!this.remoteEngine) {
-			const engine = new PongGameEngine();
-			this.remoteEngine = engine;
-			this.activeGame = engine;
-			const settings = this.loadSettings();
-			engine.applySettings(settings);
-			engine.enableRemoteMode(this.remotePlayerIndex, (y: number) => {
-				this.socket?.emit('paddle-move', { y });
-			});
-			engine.initialize();
-			engine.setCanvasSize(data.canvasWidth, data.canvasHeight);
-			engine.play();
-		}
-
-		// Sync state
+		this.updateOnlineStatus(`Reconnected vs ${data.opponent}`);
+		this.setupRemoteGame({ roomId: data.roomId, playerNumber: data.playerNumber, opponent: data.opponent, canvasWidth: data.canvasWidth, canvasHeight: data.canvasHeight, resumeToken: existingToken });
 		if (this.remoteEngine) {
 			this.remoteEngine.applyRemoteState(data.state);
 		}
 
-		this.showChatPanel(true);
-		this.updateOnlineStatus(`Reconnected vs ${data.opponent}`);
 		this.showScreen('game-arena');
 	}
 
@@ -329,6 +332,7 @@ class PongTournamentApp {
 	}
 
 	private handleRemoteOver(data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }): void {
+		console.log('Game over', data);
 		if (!this.remoteRoomId) return;
 
 		if (this.remoteEngine) {
@@ -336,14 +340,14 @@ class PongTournamentApp {
 			this.remoteEngine = null;
 		}
 		this.activeGame = null;
-		const winnerName = data.winner === 1 ? this.remoteOpponent : (AuthService.getUser()?.username || 'You');
+		const winnerName = data.winner === 1 ? this.currentMatch?.player1.alias || 'Player 1' : this.currentMatch?.player2.alias || 'Player 2';
 		const score = `${data.finalScore.player1} - ${data.finalScore.player2}`;
 
 		// Save match result to stats
 		this.saveMatchResult({
 			date: new Date().toISOString(),
-			player1: this.remotePlayerIndex === 0 ? (AuthService.getUser()?.username || 'You') : (this.remoteOpponent || 'Opponent'),
-			player2: this.remotePlayerIndex === 1 ? (AuthService.getUser()?.username || 'You') : (this.remoteOpponent || 'Opponent'),
+			player1: this.currentMatch?.player1.alias || 'Player 1',
+			player2: this.currentMatch?.player2.alias || 'Player 2',
 			winner: winnerName,
 			score: score
 		});
@@ -351,11 +355,15 @@ class PongTournamentApp {
 		this.remoteRoomId = null;
 		this.remoteOpponent = null;
 		this.remotePlayerIndex = null;
+		this.currentMatch = null;
 		this.clearResumeData();
 		this.showChatPanel(false);
 		this.updateOnlineStatus('Match finished');
-		const msg = data.reason === 'forfeit' ? 'Opponent left the match' : `Winner: Player ${data.winner}`;
-		alert(`Game over: ${msg}`);
+		if (data.reason === 'forfeit') {
+			this.showError(`${winnerName} wins by forfeit! Opponent left the match.`);
+		} else {
+			this.showError(`${winnerName} wins the game!`);
+		}
 		this.showScreen('welcome-screen');
 	}
 
@@ -834,7 +842,7 @@ class PongTournamentApp {
 		// Disable the settings button while in the game screen; enable otherwise
 		const settingsBtn = document.getElementById('settings-btn');
 		if (settingsBtn) {
-		if (screenId === 'game-arena' || screenId === 'auth-screen') {
+			if (screenId === 'game-arena' || screenId === 'auth-screen') {
 				settingsBtn.style.display = 'none';
 				settingsBtn.setAttribute('disabled', 'true');
 			} else {
