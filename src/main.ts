@@ -316,7 +316,7 @@ class PongTournamentApp {
 
 	private handleGameResumed(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; state: RemoteGameState }): void {
 		const existingToken = this.remoteResume?.token || this.loadResumeData()?.token || '';
-		this.updateOnlineStatus(`Reconnected vs ${data.opponent}`);
+		this.updateOnlineStatus(i18n.t('status.reconnectedVs').replace('{name}', data.opponent));
 		this.setupRemoteGame({ roomId: data.roomId, playerNumber: data.playerNumber, opponent: data.opponent, canvasWidth: data.canvasWidth, canvasHeight: data.canvasHeight, resumeToken: existingToken });
 		if (this.remoteEngine) {
 			this.remoteEngine.applyRemoteState(data.state);
@@ -338,14 +338,14 @@ class PongTournamentApp {
 			this.remoteEngine = null;
 		}
 		this.activeGame = null;
-		const winnerName = data.winner === 1 ? this.currentMatch?.player1.alias || 'Player 1' : this.currentMatch?.player2.alias || 'Player 2';
+		const winnerName = data.winner === 1 ? this.currentMatch?.player1.alias || i18n.t('game.player1') : this.currentMatch?.player2.alias || i18n.t('game.player2');
 		const score = `${data.finalScore.player1} - ${data.finalScore.player2}`;
 
 		// Save match result to stats
 		this.saveMatchResult({
 			date: new Date().toISOString(),
-			player1: this.currentMatch?.player1.alias || 'Player 1',
-			player2: this.currentMatch?.player2.alias || 'Player 2',
+			player1: this.currentMatch?.player1.alias || i18n.t('game.player1'),
+			player2: this.currentMatch?.player2.alias || i18n.t('game.player2'),
 			winner: winnerName,
 			score: score
 		});
@@ -356,11 +356,11 @@ class PongTournamentApp {
 		this.currentMatch = null;
 		this.clearResumeData();
 		this.showChatPanel(false);
-		this.updateOnlineStatus('Match finished');
+		this.updateOnlineStatus(i18n.t('status.matchFinished'));
 		if (data.reason === 'forfeit') {
-			this.showError(`${winnerName} wins by forfeit! Opponent left the match.`);
+			this.showError(i18n.t('game.winnerByForfeit').replace('{name}', winnerName));
 		} else {
-			this.showError(`${winnerName} wins the game!`);
+			this.showError(i18n.t('game.winner').replace('{name}', winnerName));
 		}
 		this.showScreen('welcome-screen');
 	}
@@ -476,24 +476,24 @@ class PongTournamentApp {
 		if (googleBtn) {
 			googleBtn.addEventListener('click', async () => {
 				googleBtn.disabled = true;
-				googleBtn.textContent = 'Connessione a Google...';
+				googleBtn.textContent = i18n.t('auth.google.connecting');
 				try {
 					const resp = await fetch(`${API_BASE_URL}/auth/google/url`);
 					if (!resp.ok) {
 						const msg = await resp.text();
-						throw new Error(`Backend ha risposto ${resp.status}: ${msg}`);
+						throw new Error(`Error from Backend ${resp.status}: ${msg}`);
 					}
 					const data = await resp.json();
 					if (data.url) {
 						window.location.href = data.url;
 					} else {
-						throw new Error('Nessun URL Google ricevuto');
+						throw new Error('Invalid response from server');
 					}
 				} catch (e: any) {
-					console.error('Google OAuth init failed', e);
-					alert(`Errore avvio Google OAuth: ${e?.message || e}`);
+					console.error('Google OAuth Error', e);
+					this.showError(`${i18n.t('auth.google.error')}: ${e?.message || e}`);
 					googleBtn.disabled = false;
-					googleBtn.textContent = 'Continua con Google';
+					googleBtn.textContent = i18n.t('auth.google');
 				}
 			});
 		}
@@ -780,9 +780,7 @@ class PongTournamentApp {
 					screen.classList.remove('active');
 				});
 				const settingsBtn = document.getElementById('settings-btn');
-				if (settingsBtn && settingsBtn.parentElement) {
-					settingsBtn.parentElement.removeChild(settingsBtn);
-				}
+				if (settingsBtn) settingsBtn.style.display = 'none';
 
 				// Create a container for the policy page
 				let policyScreen = document.getElementById(`${policy}-screen`);
@@ -890,13 +888,13 @@ class PongTournamentApp {
 
 		// Input validation
 		if (!this.validateAlias(sanitizedAlias)) {
-			this.showError('Invalid alias! Use only letters, numbers, spaces, hyphens, and underscores (3-20 characters).');
+			this.showError(i18n.t('error.alias'));
 			return;
 		}
 
 		// Check for duplicate aliases
 		if (this.registeredPlayers.find(p => p.alias.toLowerCase() === sanitizedAlias.toLowerCase())) {
-			this.showError('Player alias already exists!');
+			this.showError(i18n.t('error.alias.exists'));
 			return;
 		}
 
@@ -916,7 +914,7 @@ class PongTournamentApp {
 			const count = this.registeredPlayers.length;
 			beginBtn.disabled = count < 2 || count % 2 !== 0;
 			if (count > 0 && count % 2 !== 0) {
-				beginBtn.title = 'Tournament requires an even number of players';
+				beginBtn.title = i18n.t('error.tournament.uneven');
 			} else {
 				beginBtn.title = '';
 			}
@@ -946,7 +944,7 @@ class PongTournamentApp {
 			const removeBtn = document.createElement('button');
 			removeBtn.className = 'remove-btn';
 			removeBtn.textContent = '×';
-			removeBtn.title = `Remove ${player.alias}`;
+			removeBtn.title = `${i18n.t('tournament.remove')} ${player.alias}`;
 			removeBtn.addEventListener('click', () => this.removePlayer(player.id));
 
 			playerTag.appendChild(playerName);
@@ -968,7 +966,7 @@ class PongTournamentApp {
 			const count = this.registeredPlayers.length;
 			beginBtn.disabled = count < 2 || count % 2 !== 0;
 			if (count > 0 && count % 2 !== 0) {
-				beginBtn.title = 'Tournament requires an even number of players';
+				beginBtn.title = i18n.t('error.tournament.uneven');
 			} else {
 				beginBtn.title = '';
 			}
@@ -978,11 +976,11 @@ class PongTournamentApp {
 	private startTournament(): void {
 		const count = this.registeredPlayers.length;
 		if (count < 2) {
-			this.showError('Need at least 2 players to start a tournament!');
+			this.showError(i18n.t('error.tournament.minPlayers'));
 			return;
 		}
 		if (count % 2 !== 0) {
-			this.showError('Tournament requires an even number of players!');
+			this.showError(i18n.t('error.tournament.uneven'));
 			return;
 		}
 		this.generateTournamentBracket();
@@ -1053,7 +1051,7 @@ class PongTournamentApp {
 			roundDiv.className = 'round';
 
 			const roundTitle = document.createElement('h3');
-			roundTitle.textContent = `Round ${roundIndex + 1}`;
+			roundTitle.textContent = i18n.t('tournament.round').replace('{n}', (roundIndex + 1).toString());
 			roundDiv.appendChild(roundTitle);
 
 			const matchesDiv = document.createElement('div');
@@ -1094,7 +1092,7 @@ class PongTournamentApp {
 				if (match.winner) {
 					const resultDiv = document.createElement('div');
 					resultDiv.className = 'match-result';
-					resultDiv.textContent = `Winner: ${match.winner.alias}`;
+					resultDiv.textContent = i18n.t('match.winner').replace('{name}', match.winner.alias);
 					matchDiv.appendChild(resultDiv);
 				}
 
@@ -1112,7 +1110,7 @@ class PongTournamentApp {
 			futureRoundDiv.className = 'round future';
 
 			const futureTitle = document.createElement('h3');
-			futureTitle.textContent = `Round ${i + 1}`;
+			futureTitle.textContent = i18n.t('tournament.round').replace('{n}', (i + 1).toString());
 			futureRoundDiv.appendChild(futureTitle);
 
 			const futureMatches = document.createElement('div');
@@ -1120,7 +1118,7 @@ class PongTournamentApp {
 
 			const pendingMatch = document.createElement('div');
 			pendingMatch.className = 'match pending';
-			pendingMatch.textContent = 'TBD';
+			pendingMatch.textContent = i18n.t('tournament.tbd');
 
 			futureMatches.appendChild(pendingMatch);
 			futureRoundDiv.appendChild(futureMatches);
@@ -1142,12 +1140,12 @@ class PongTournamentApp {
 			statusDiv.className = 'tournament-status final';
 
 			const winnerTitle = document.createElement('h2');
-			winnerTitle.textContent = `🏆 Tournament Winner: ${winner?.alias}! 🏆`;
+			winnerTitle.textContent = i18n.t('tournament.winner').replace('{name}', winner?.alias || '');
 			statusDiv.appendChild(winnerTitle);
 
 			const newTournamentBtn = document.createElement('button');
 			newTournamentBtn.className = 'primary-btn';
-			newTournamentBtn.textContent = 'New Tournament';
+			newTournamentBtn.textContent = i18n.t('tournament.new');
 			newTournamentBtn.addEventListener('click', () => this.resetTournament());
 			statusDiv.appendChild(newTournamentBtn);
 		} else {
@@ -1157,7 +1155,7 @@ class PongTournamentApp {
 				statusDiv.className = 'tournament-status';
 
 				const nextTitle = document.createElement('h3');
-				nextTitle.textContent = 'Next Match:';
+				nextTitle.textContent = i18n.t('tournament.nextMatch');
 				statusDiv.appendChild(nextTitle);
 
 				const matchInfo = document.createElement('p');
@@ -1178,7 +1176,7 @@ class PongTournamentApp {
 				nextMatchBtn.style.display = 'none';
 			} else {
 				nextMatchBtn.style.display = 'block';
-				nextMatchBtn.textContent = 'Start Next Match';
+				nextMatchBtn.textContent = i18n.t('tournament.nextMatch.start');
 			}
 		}
 	}
@@ -1258,24 +1256,13 @@ class PongTournamentApp {
 		this.showScreen('welcome-screen');
 	}
 
-	private startQuickGame(): void {
-		const defaultPlayers: GameMatch = {
-			player1: { alias: 'Player 1', id: '1' },
-			player2: { alias: 'Player 2', id: '2' },
-			matchId: 'quick-game',
-			round: 0
-		};
-		this.currentMatch = defaultPlayers;
-		this.startPongGame(defaultPlayers.player1, defaultPlayers.player2);
-	}
-
 	private startSinglePlayer(): void {
 		// Usa un alias dal profilo; chiedi nome solo se non loggato o senza alias
 		const user = AuthService.getUser();
 		const userAlias = user?.username || user?.name || (user?.email ? user.email.split('@')[0] : '') || '';
 		let playerAlias = userAlias || 'Player';
 		if (!userAlias) {
-			const name = window.prompt('Inserisci il tuo nome per la modalità single player (Annulla per uscire):', playerAlias);
+			const name = window.prompt(i18n.t('singleplayer.alias'), playerAlias);
 			if (name === null) return; // user cancelled
 			playerAlias = name.trim() || 'Player';
 		}
@@ -1468,7 +1455,7 @@ class PongTournamentApp {
 			this.displayBracket();
 		} else {
 			// Quick game
-			this.showError(`${winner.alias} wins the game!`);
+			this.showError(i18n.t('game.winner').replace('{name}', winner.alias));
 			// persist match result locally
 			this.saveMatchResult({
 				date: new Date().toISOString(),
@@ -2132,7 +2119,7 @@ function consumeGoogleLoginFromHash(): void {
 			// Puliamo l'hash per evitare ricarichi indesiderati
 			history.replaceState({}, document.title, '#welcome-screen');
 		} catch (e) {
-			console.error('Errore nel parsing dei dati Google', e);
+			console.error('Error parsing Google data', e);
 		}
 	}
 }
