@@ -306,7 +306,6 @@ class PongTournamentApp {
 	}
 
 	private handleRemoteStart(data: { roomId: string; playerNumber: number; opponent: string; canvasWidth: number; canvasHeight: number; resumeToken: string }): void {
-		console.log('Game started', data);
 		this.updateOnlineStatus(
 			i18n.t('status.matchVs').replace('{name}', data.opponent)
 		);
@@ -332,7 +331,6 @@ class PongTournamentApp {
 	}
 
 	private handleRemoteOver(data: { winner: number; finalScore: { player1: number; player2: number }; reason: string }): void {
-		console.log('Game over', data);
 		if (!this.remoteRoomId) return;
 
 		if (this.remoteEngine) {
