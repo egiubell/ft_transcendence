@@ -182,6 +182,7 @@ class PongTournamentApp {
 		this.onlineStatusEl = document.getElementById('online-status');
 		this.initializeChatUI();
 		if (isAuthed) {
+			this.socket?.connect();
 			this.updateCurrentUserDisplay();
 			this.showScreen('welcome-screen', false);
 		} else {
@@ -193,7 +194,7 @@ class PongTournamentApp {
 	private setupSocket(): void {
 		if (this.socket) return;
 		const SOCKET_URL = window.location.origin;
-		this.socket = io(SOCKET_URL, { transports: ['websocket'] });
+		this.socket = io(SOCKET_URL, { transports: ['websocket'], autoConnect: false });
 
 		this.socket.on('connect', () => {
 			this.updateOnlineStatus(i18n.t('header.connected'));
@@ -453,11 +454,13 @@ class PongTournamentApp {
 			await AuthService.logout();
 			this.showScreen('auth-screen');
 			this.updateCurrentUserDisplay();
+			this.socket?.disconnect();
 			// Hide header user info
 			const headerDisplay = document.getElementById('current-user-display-header');
 			const headerLogout = document.getElementById('logout-btn-header');
 			if (headerDisplay) headerDisplay.style.display = 'none';
 			if (headerLogout) headerLogout.style.display = 'none';
+			if (this.onlineStatusEl) this.onlineStatusEl.style.display = 'none';
 		};
 
 		document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
@@ -508,8 +511,10 @@ class PongTournamentApp {
 			this.proceedToNextMatch();
 		});
 
-		// Ensure settings button exists and has its handler
-		this.ensureSettingsButtonExists();
+		document.getElementById('settings-btn')?.addEventListener('click', () => {
+			this.renderSettingsUI();
+			this.openSettingsPanel();
+		});
 
 		// Stats & single player
 		document.getElementById('single-player-btn')?.addEventListener('click', () => {
@@ -606,6 +611,7 @@ class PongTournamentApp {
 				}
 				try {
 					await AuthService.login(email, password);
+					this.socket?.connect();
 					this.updateCurrentUserDisplay();
 					this.showScreen('welcome-screen');
 					clearLoginError();
@@ -740,33 +746,33 @@ class PongTournamentApp {
 	}
 
 
-		private showPolicyPage(policy: 'privacy-policy' | 'terms-of-service'): void {
-			const appContainer = document.getElementById('app-container');
-			if (!appContainer) return;
+	private showPolicyPage(policy: 'privacy-policy' | 'terms-of-service'): void {
+		const appContainer = document.getElementById('app-container');
+		if (!appContainer) return;
 
-			const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
+		const filename = policy === 'privacy-policy' ? 'privacy-policy.html' : 'terms-of-service.html';
 
-			// Fetch and display the policy page
-			fetch(filename)
-				.then(response => {
-					if (!response.ok) throw new Error(`Failed to load ${filename}`);
-					return response.text();
-				})
-				.then(html => {
-					// Create a temporary container for the policy page
-					const tempDiv = document.createElement('div');
-					tempDiv.innerHTML = html;
+		// Fetch and display the policy page
+		fetch(filename)
+			.then(response => {
+				if (!response.ok) throw new Error(`Failed to load ${filename}`);
+				return response.text();
+			})
+			.then(html => {
+				// Create a temporary container for the policy page
+				const tempDiv = document.createElement('div');
+				tempDiv.innerHTML = html;
 
-					// Extract the main content
-					const policyContainer = tempDiv.querySelector('.policy-container');
-					if (!policyContainer) throw new Error('Policy content not found');
+				// Extract the main content
+				const policyContainer = tempDiv.querySelector('.policy-container');
+				if (!policyContainer) throw new Error('Policy content not found');
 
-					const token = AuthService.getToken();
-					const user = AuthService.getUser();
-					// Hide all screens
-					document.querySelectorAll('.screen').forEach(screen => {
-						screen.classList.remove('active');
-					});
+				const token = AuthService.getToken();
+				const user = AuthService.getUser();
+				// Hide all screens
+				document.querySelectorAll('.screen').forEach(screen => {
+					screen.classList.remove('active');
+				});
 				const settingsBtn = document.getElementById('settings-btn');
 				if (settingsBtn && settingsBtn.parentElement) {
 					settingsBtn.parentElement.removeChild(settingsBtn);
@@ -825,12 +831,16 @@ class PongTournamentApp {
 			console.error('❌ Screen not found:', screenId);
 		}
 
-		// Remove the settings button from the DOM while in the game screen; recreate otherwise
+		// Disable the settings button while in the game screen; enable otherwise
 		const settingsBtn = document.getElementById('settings-btn');
-		if (screenId === 'game-arena') {
-			if (settingsBtn && settingsBtn.parentElement) settingsBtn.parentElement.removeChild(settingsBtn);
-		} else {
-			this.ensureSettingsButtonExists();
+		if (settingsBtn) {
+		if (screenId === 'game-arena' || screenId === 'auth-screen') {
+				settingsBtn.style.display = 'none';
+				settingsBtn.setAttribute('disabled', 'true');
+			} else {
+				settingsBtn.style.display = 'block';
+				settingsBtn.removeAttribute('disabled');
+			}
 		}
 
 		// Update browser history for SPA navigation
@@ -1003,7 +1013,7 @@ class PongTournamentApp {
 				firstRound.push({
 					player1: currentPlayers[i],
 					player2: currentPlayers[i + 1],
-					matchId: `round-0-match-${Math.floor(i/2)}`,
+					matchId: `round-0-match-${Math.floor(i / 2)}`,
 					round: 0
 				});
 			}
@@ -1045,7 +1055,7 @@ class PongTournamentApp {
 
 			round.forEach((match, matchIndex) => {
 				const isCurrentMatch = roundIndex === this.tournamentBracket.currentRound &&
-									 matchIndex === this.tournamentBracket.currentMatchIndex;
+					matchIndex === this.tournamentBracket.currentMatchIndex;
 				const isCompleted = !!match.winner;
 
 				const matchDiv = document.createElement('div');
@@ -1203,7 +1213,7 @@ class PongTournamentApp {
 				nextRound.push({
 					player1: winners[i],
 					player2: winners[i + 1],
-					matchId: `round-${this.tournamentBracket.currentRound + 1}-match-${Math.floor(i/2)}`,
+					matchId: `round-${this.tournamentBracket.currentRound + 1}-match-${Math.floor(i / 2)}`,
 					round: this.tournamentBracket.currentRound + 1
 				});
 			}
@@ -1283,7 +1293,11 @@ class PongTournamentApp {
 		// Keep reference so we can stop the match early
 		this.activeGame = pongGame;
 		// Disable settings while match is running
-		document.getElementById('settings-btn')?.setAttribute('disabled', 'true');
+		const settingsBtn = document.getElementById('settings-btn');
+		if (settingsBtn) {
+			settingsBtn.style.display = 'none';
+			settingsBtn.setAttribute('disabled', 'true');
+		}
 		// Prefer current UI settings if user has changed them but not saved
 		let settings: GameSettings;
 		try {
@@ -1301,7 +1315,10 @@ class PongTournamentApp {
 		pongGame.onGameComplete = (winner: number) => {
 			// Re-enable settings when game ends
 			this.activeGame = null;
-			document.getElementById('settings-btn')?.removeAttribute('disabled');
+			if (settingsBtn) {
+				settingsBtn.style.display = 'block';
+				settingsBtn.removeAttribute('disabled');
+			}
 			this.handleGameResult(winner);
 		};
 	}
@@ -1373,32 +1390,6 @@ class PongTournamentApp {
 		this.showToast('Settings reset to defaults', 1400);
 	}
 
-	/** Ensure the settings button exists in the navigation and wire its handler */
-	private ensureSettingsButtonExists(): void {
-		const nav = document.getElementById('navigation-menu');
-		if (!nav) return;
-		let btn = document.getElementById('settings-btn') as HTMLButtonElement | null;
-		if (!btn) {
-			btn = document.createElement('button');
-			btn.id = 'settings-btn';
-			btn.className = 'secondary-btn';
-			nav.appendChild(btn);
-		}
-
-		const settingsLabel = i18n.t('header.settings');
-		btn.title = settingsLabel;
-		btn.textContent = settingsLabel;
-
-		// Attach handler if not already attached (use data attr to avoid dupes)
-		if (!(btn.dataset && btn.dataset.handler === '1')) {
-			btn.addEventListener('click', () => {
-				this.renderSettingsUI();
-				this.openSettingsPanel();
-			});
-			btn.dataset.handler = '1';
-		}
-	}
-
 	/** Stop any running game instance and clean up network state without navigating */
 	private teardownActiveGame(): void {
 		if (this.activeGame) {
@@ -1428,7 +1419,6 @@ class PongTournamentApp {
 		this.remotePlayerIndex = null;
 		this.showChatPanel(false);
 		this.updateOnlineStatus(i18n.t('status.leftMatch'));
-		document.getElementById('settings-btn')?.removeAttribute('disabled');
 	}
 
 	/** Show a small toast message */
@@ -2054,15 +2044,15 @@ class PongGameEngine {
 
 		// Left paddle collision
 		const leftPaddleCollision = ball.x - ball.size <= p1.x + p1.width &&
-								  ball.y >= p1.y &&
-								  ball.y <= p1.y + p1.height &&
-								  ball.dx < 0;
+			ball.y >= p1.y &&
+			ball.y <= p1.y + p1.height &&
+			ball.dx < 0;
 
 		// Right paddle collision
 		const rightPaddleCollision = ball.x + ball.size >= p2.x &&
-								   ball.y >= p2.y &&
-								   ball.y <= p2.y + p2.height &&
-								   ball.dx > 0;
+			ball.y >= p2.y &&
+			ball.y <= p2.y + p2.height &&
+			ball.dx > 0;
 
 		return leftPaddleCollision || rightPaddleCollision;
 	}
@@ -2092,9 +2082,9 @@ class PongGameEngine {
 		// Draw paddles
 		this.ctx.fillStyle = '#fff';
 		this.ctx.fillRect(this.gameState.paddle1.x, this.gameState.paddle1.y,
-						 this.gameState.paddle1.width, this.gameState.paddle1.height);
+			this.gameState.paddle1.width, this.gameState.paddle1.height);
 		this.ctx.fillRect(this.gameState.paddle2.x, this.gameState.paddle2.y,
-						 this.gameState.paddle2.width, this.gameState.paddle2.height);
+			this.gameState.paddle2.width, this.gameState.paddle2.height);
 
 		// Draw ball
 		this.ctx.beginPath();
@@ -2149,6 +2139,9 @@ function applyTranslations(): void {
 		const key = el.getAttribute('data-i18n');
 		if (key) {
 			el.textContent = i18n.t(key);
+			if (el instanceof HTMLButtonElement && el.title !== undefined) {
+				el.title = i18n.t(key);
+			}
 		}
 	});
 }

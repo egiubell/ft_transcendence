@@ -19,211 +19,201 @@
             <nav id="navigation-menu" class="flex items-center gap-4">
                 <span id="current-user-display-header" class="user-display text-sm text-gray-300" style="display: none;"></span>
                 <button id="logout-btn-header" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition" title="Logout" style="display: none;" data-i18n="header.logout">Logout</button>
-                <span id="online-status" class="px-3 py-1 bg-green-600 rounded-full text-xs font-semibold" style="display:none;" data-i18n="header.offline">Offline</span>
-                <button id="settings-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition" title="Settings" data-i18n="header.settings">Settings</button>
+                <span id="online-status" class="px-4 py-2 bg-green-600 rounded-full text-xs font-semibold" style="display:none;" data-i18n="header.offline">Offline</span>
+                <button id="settings-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition" title="Settings" style="display: none;" data-i18n="header.settings">Settings</button>
             </nav>
         </header>
-
         <main id="content-area" class="flex-1 p-6">
             <!-- Auth Screen -->
             <div id="auth-screen" class="screen">
                 <div class="flex items-center justify-center min-h-full">
-                <div class="auth-container bg-gray-800 rounded-2xl shadow-2xl p-8 pb-12 w-full max-w-md border border-gray-700 relative">
-                    <h1 class="auth-title text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏓 Pong Tournament</h1>
-                    <form id="login-form" class="auth-form active space-y-4">
-                        <h2 class="text-2xl font-bold text-center text-white mb-4" data-i18n="auth.login.title">Login</h2>
-                        <div class="form-group space-y-2">
-                            <label for="login-email" class="block text-sm font-medium text-gray-300" data-i18n="auth.login.email">Email</label>
-                            <input type="email" id="login-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <div class="form-group space-y-2">
-                            <label for="login-password" class="block text-sm font-medium text-gray-300" data-i18n="auth.login.password">Password</label>
-                            <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105" data-i18n="auth.login.button">Login</button>
-                        <p class="form-toggle text-center text-gray-400 text-sm">
-                            <span data-i18n="auth.login.noAccount">Don't have an account?</span> <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold" data-i18n="auth.login.signup">Sign up</a>
-                        </p>
-                        <button type="button" id="google-login-btn" class="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold transition flex items-center justify-center gap-2" style="width:100%" data-i18n="auth.google">🔑 Continue with Google</button>
-                        <!-- Language Selector -->
-                        <div class="flex justify-center gap-2 mt-4">
-                            <button id="lang-en-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="English">EN</button>
-                            <button id="lang-it-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Italiano">IT</button>
-                            <button id="lang-fr-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
-                            <button id="lang-de-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Deutsch">DE</button>
-                        </div>
-                        <div id="login-error" class="error-message text-red-400 text-sm text-center"></div>
-                    </form>
-
-                    <form id="signup-form" class="auth-form space-y-4">
-                        <h2 class="text-2xl font-bold text-center text-white mb-4" data-i18n="auth.signup.title">Sign Up</h2>
-                        <h2 data-i18n="auth.signup.createAccount">Create Account</h2>
-                        <div class="form-group space-y-2">
-                            <label for="signup-email" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.email">Email</label>
-                            <input type="email" id="signup-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <div class="form-group space-y-2">
-                            <label for="signup-username" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.username">Username</label>
-                            <input type="text" id="signup-username" placeholder="your_username" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <div class="form-group space-y-2">
-                            <label for="signup-password" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.password">Password</label>
-                            <input type="password" id="signup-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <div class="form-group space-y-2">
-                            <label for="signup-confirm" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.confirm">Confirm Password</label>
-                            <input type="password" id="signup-confirm" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
-                        </div>
-                        <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105" data-i18n="auth.signup.button">Sign Up</button>
-                        <p class="form-toggle text-center text-gray-400 text-sm">
-                            <span data-i18n="auth.signup.hasAccount">Already have an account?</span> <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold" data-i18n="auth.signup.login">Login</a>
-                        </p>
-                        <div id="signup-error" class="error-message text-red-400 text-sm text-center"></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="welcome-screen" class="screen">
-                <div class="flex flex-col items-center justify-center space-y-6 max-w-2xl mx-auto">
-                <!-- Language Selector (top right) -->
-                <div class="absolute top-24 right-6 flex gap-2">
-                    <button id="lang-en-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="English">EN</button>
-                    <button id="lang-it-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Italiano">IT</button>
-                    <button id="lang-fr-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
-                    <button id="lang-de-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Deutsch">DE</button>
-                </div>
-                
-                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" id="welcome-title">
-                    <span data-i18n="welcome.prefix">Welcome to</span> Pong Tournament!
-                </h2>
-                <button id="start-tournament-btn" class="primary-btn w-full max-w-md py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg" data-i18n="welcome.tournament">Start New Tournament</button>
-                <button id="quick-game-btn" class="w-full max-w-md py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.quickGame">Multiplayer Quick Game</button>
-                <button id="single-player-btn" class="w-full max-w-md py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.singlePlayer">Single Player</button>
-                <button id="stats-btn" class="w-full max-w-md py-4 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.stats">Stats</button>
-                </div>
-            </div>
-
-            <div id="tournament-setup" class="screen">
-                <div class="flex flex-col items-center space-y-6">
-                <h2 class="text-3xl font-bold text-purple-400" data-i18n="tournament.title">Tournament Setup</h2>
-                <div id="player-registration" class="flex gap-3 w-full max-w-md">
-                    <input type="text" id="player-alias" placeholder="Enter your alias" class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
-                    <button id="add-player-btn" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition" data-i18n="tournament.addPlayer">Add Player</button>
-                </div>
-                <div id="registered-players" class="w-full max-w-md space-y-2"></div>
-                <button id="begin-tournament-btn" disabled class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="tournament.begin">Begin Tournament</button>
-                </div>
-            </div>
-
-            <div id="game-arena" class="screen">
-                <div class="flex flex-col items-center space-y-4">
-                <div id="game-info" class="flex justify-between items-center w-full max-w-4xl px-6 py-3 bg-gray-800 rounded-lg border border-gray-700">
-                    <span id="player1-name" class="text-lg font-bold text-blue-400">Player 1</span>
-                    <span id="game-score" class="text-2xl font-bold text-white">0 - 0</span>
-                    <span id="player2-name" class="text-lg font-bold text-pink-400">Player 2</span>
-                </div>
-                <canvas id="pong-canvas" width="800" height="400" class="border-4 border-purple-600 rounded-lg shadow-2xl"></canvas>
-                <div id="game-controls" class="flex flex-col items-center gap-2">
-                    <p class="text-gray-400 text-sm" data-i18n="game.controls">W/S keys to move up and down</p>
-                        <button id="exit-match-btn" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition" data-i18n="game.quit">Exit Match</button>
-                </div>
-                <div id="chat-panel" class="chat-panel w-full max-w-lg bg-gray-800 rounded-lg p-4 border border-gray-700" style="display:none;">
-                    <div class="chat-header text-lg font-semibold mb-3 text-purple-400" data-i18n="game.chat">Match Chat</div>
-                    <div id="chat-log" class="chat-log bg-gray-900 rounded p-3 h-48 overflow-y-auto mb-3 space-y-2"></div>
-                    <div class="chat-input-row flex gap-2">
-                        <input id="chat-input" type="text" placeholder="Send a message" maxlength="300" class="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
-                        <button id="chat-send" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition font-semibold" data-i18n="game.send">Send</button>
+                    <div class="auth-container bg-gray-800 rounded-2xl shadow-2xl p-8 pb-12 w-full max-w-md border border-gray-700 relative">
+                        <h1 class="auth-title text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏓 Pong Tournament</h1>
+                        <form id="login-form" class="auth-form active space-y-4">
+                            <h2 class="text-2xl font-bold text-center text-white mb-4" data-i18n="auth.login.title">Login</h2>
+                            <div class="form-group space-y-2">
+                                <label for="login-email" class="block text-sm font-medium text-gray-300" data-i18n="auth.login.email">Email</label>
+                                <input type="email" id="login-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <div class="form-group space-y-2">
+                                <label for="login-password" class="block text-sm font-medium text-gray-300" data-i18n="auth.login.password">Password</label>
+                                <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105" data-i18n="auth.login.button">Login</button>
+                            <p class="form-toggle text-center text-gray-400 text-sm">
+                                <span data-i18n="auth.login.noAccount">Don't have an account?</span> <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold" data-i18n="auth.login.signup">Sign up</a>
+                            </p>
+                            <button type="button" id="google-login-btn" class="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold transition flex items-center justify-center gap-2" style="width:100%" data-i18n="auth.google">🔑 Continue with Google</button>
+                            <!-- Language Selector -->
+                            <div class="flex justify-center gap-2 mt-4">
+                                <button id="lang-en-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="English">EN</button>
+                                <button id="lang-it-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Italiano">IT</button>
+                                <button id="lang-fr-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
+                                <button id="lang-de-btn-auth" class="px-4 py-2 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Deutsch">DE</button>
+                            </div>
+                            <div id="login-error" class="error-message text-red-400 text-sm text-center"></div>
+                        </form>
+                        <form id="signup-form" class="auth-form space-y-4">
+                            <h2 class="text-2xl font-bold text-center text-white mb-4" data-i18n="auth.signup.title">Sign Up</h2>
+                            <h2 data-i18n="auth.signup.createAccount">Create Account</h2>
+                            <div class="form-group space-y-2">
+                                <label for="signup-email" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.email">Email</label>
+                                <input type="email" id="signup-email" placeholder="your@email.com" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <div class="form-group space-y-2">
+                                <label for="signup-username" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.username">Username</label>
+                                <input type="text" id="signup-username" placeholder="your_username" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <div class="form-group space-y-2">
+                                <label for="signup-password" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.password">Password</label>
+                                <input type="password" id="signup-password" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <div class="form-group space-y-2">
+                                <label for="signup-confirm" class="block text-sm font-medium text-gray-300" data-i18n="auth.signup.confirm">Confirm Password</label>
+                                <input type="password" id="signup-confirm" placeholder="••••••••" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400">
+                            </div>
+                            <button type="submit" class="primary-btn w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition transform hover:scale-105" data-i18n="auth.signup.button">Sign Up</button>
+                            <p class="form-toggle text-center text-gray-400 text-sm">
+                                <span data-i18n="auth.signup.hasAccount">Already have an account?</span> <a href="#" onclick="toggleAuthForm(); return false;" class="text-purple-400 hover:text-purple-300 font-semibold" data-i18n="auth.signup.login">Login</a>
+                            </p>
+                            <div id="signup-error" class="error-message text-red-400 text-sm text-center"></div>
+                        </form>
                     </div>
                 </div>
+            </div>
+            <div id="welcome-screen" class="screen">
+                <div class="flex flex-col items-center justify-center space-y-6 max-w-2xl mx-auto">
+                    <!-- Language Selector (top right) -->
+                    <div class="absolute top-24 right-6 flex gap-2">
+                        <button id="lang-en-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="English">EN</button>
+                        <button id="lang-it-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Italiano">IT</button>
+                        <button id="lang-fr-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Français">FR</button>
+                        <button id="lang-de-btn" class="px-3 py-1 bg-gray-700 hover:bg-purple-600 rounded-lg text-sm font-semibold transition" title="Deutsch">DE</button>
+                    </div>
+                    <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" id="welcome-title">
+                        <span data-i18n="welcome.prefix">Welcome to</span> Pong Tournament!
+                    </h2>
+                    <button id="start-tournament-btn" class="primary-btn w-full max-w-md py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg" data-i18n="welcome.tournament">Start New Tournament</button>
+                    <button id="quick-game-btn" class="w-full max-w-md py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.quickGame">Multiplayer Quick Game</button>
+                    <button id="single-player-btn" class="w-full max-w-md py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.singlePlayer">Single Player</button>
+                    <button id="stats-btn" class="w-full max-w-md py-4 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-lg transition transform hover:scale-105" data-i18n="welcome.stats">Stats</button>
                 </div>
             </div>
-
+            <div id="tournament-setup" class="screen">
+                <div class="flex flex-col items-center space-y-6">
+                    <h2 class="text-3xl font-bold text-purple-400" data-i18n="tournament.title">Tournament Setup</h2>
+                    <div id="player-registration" class="flex gap-3 w-full max-w-md">
+                        <input type="text" id="player-alias" placeholder="Enter your alias" class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
+                        <button id="add-player-btn" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition" data-i18n="tournament.addPlayer">Add Player</button>
+                    </div>
+                    <div id="registered-players" class="w-full max-w-md space-y-2"></div>
+                    <button id="begin-tournament-btn" disabled class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="tournament.begin">Begin Tournament</button>
+                </div>
+            </div>
+            <div id="game-arena" class="screen">
+                <div class="flex flex-col items-center space-y-4">
+                    <div id="game-info" class="flex justify-between items-center w-full max-w-4xl px-6 py-3 bg-gray-800 rounded-lg border border-gray-700">
+                        <span id="player1-name" class="text-lg font-bold text-blue-400">Player 1</span>
+                        <span id="game-score" class="text-2xl font-bold text-white">0 - 0</span>
+                        <span id="player2-name" class="text-lg font-bold text-pink-400">Player 2</span>
+                    </div>
+                    <canvas id="pong-canvas" width="800" height="400" class="border-4 border-purple-600 rounded-lg shadow-2xl"></canvas>
+                    <div id="game-controls" class="flex flex-col items-center gap-2">
+                        <p class="text-gray-400 text-sm" data-i18n="game.controls">W/S keys to move up and down</p>
+                        <button id="exit-match-btn" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition" data-i18n="game.quit">Exit Match</button>
+                    </div>
+                    <div id="chat-panel" class="chat-panel w-full max-w-lg bg-gray-800 rounded-lg p-4 border border-gray-700" style="display:none;">
+                        <div class="chat-header text-lg font-semibold mb-3 text-purple-400" data-i18n="game.chat">Match Chat</div>
+                        <div id="chat-log" class="chat-log bg-gray-900 rounded p-3 h-48 overflow-y-auto mb-3 space-y-2"></div>
+                        <div class="chat-input-row flex gap-2">
+                            <input id="chat-input" type="text" placeholder="Send a message" maxlength="300" class="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400">
+                            <button id="chat-send" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition font-semibold" data-i18n="game.send">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="tournament-bracket" class="screen">
                 <div class="flex flex-col items-center space-y-6">
-                <h2 class="text-3xl font-bold text-purple-400" data-i18n="tournament.bracket">Tournament bracket</h2>
-                <div id="bracket-display" class="w-full max-w-4xl"></div>
-                <button id="next-match-btn" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition transform hover:scale-105" data-i18n="tournament.nextMatch">Start Next Match</button>
+                    <h2 class="text-3xl font-bold text-purple-400" data-i18n="tournament.bracket">Tournament bracket</h2>
+                    <div id="bracket-display" class="w-full max-w-4xl"></div>
+                    <button id="next-match-btn" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition transform hover:scale-105" data-i18n="tournament.nextMatch">Start Next Match</button>
                 </div>
             </div>
-
             <div id="stats-screen" class="screen">
                 <div class="flex flex-col items-center space-y-6">
-                <h2 class="text-3xl font-bold text-green-400" data-i18n="stats.title">Match Statistics (Local)</h2>
-                <div id="stats-container" class="w-full max-w-4xl bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <p class="text-gray-400" data-i18n="stats.noData">No data yet.</p>
-                </div>
-                <button id="clear-stats" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition" data-i18n="stats.clear">Clear Local Stats</button>
-                <button id="stats-back-btn" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="menu.back">Back</button>
+                    <h2 class="text-3xl font-bold text-green-400" data-i18n="stats.title">Match Statistics (Local)</h2>
+                    <div id="stats-container" class="w-full max-w-4xl bg-gray-800 rounded-lg p-6 border border-gray-700">
+                        <p class="text-gray-400" data-i18n="stats.noData">No data yet.</p>
+                    </div>
+                    <button id="clear-stats" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition" data-i18n="stats.clear">Clear Local Stats</button>
+                    <button id="stats-back-btn" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="menu.back">Back</button>
                 </div>
             </div>
         </main>
     </div>
-        <!-- Settings panel -->
-        <div id="settings-panel" class="screen-settings fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" aria-hidden="true">
-            <div class="settings-content bg-gray-800 rounded-2xl p-8 w-full max-w-md border border-gray-700 shadow-2xl">
-                <h2 class="text-2xl font-bold mb-6 text-purple-400" data-i18n="settings.title">Game Settings</h2>
-                <div class="setting-row flex items-center gap-3 mb-4">
-                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-powerups" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.powerups">Enable Power-ups</span></label>
-                </div>
-                <div class="setting-row flex items-center gap-3 mb-4">
-                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-attacks" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.attacks">Enable Attacks</span></label>
-                </div>
-                <div class="setting-row flex flex-col gap-2 mb-4">
-                    <label for="opt-map" class="text-sm font-medium text-gray-300" data-i18n="settings.map">Map</label>
-                    <select id="opt-map" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500">
-                        <option value="classic" data-i18n="settings.mapClassic">Classic</option>
-                        <option value="compact" data-i18n="settings.mapCompact">Compact</option>
-                        <option value="extended" data-i18n="settings.mapExtended">Extended</option>
-                    </select>
-                </div>
-                <div class="setting-row flex flex-col gap-2 mb-4">
-                    <label for="opt-ball-speed" class="text-sm font-medium text-gray-300" data-i18n="settings.ballSpeed">Ball speed</label>
-                    <input id="opt-ball-speed" type="range" min="2" max="12" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div class="setting-row flex flex-col gap-2 mb-4">
-                    <label for="opt-paddle-size" class="text-sm font-medium text-gray-300" data-i18n="settings.paddleSize">Paddle size</label>
-                    <input id="opt-paddle-size" type="range" min="40" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                </div>
-                <div class="setting-row flex items-center gap-3 mb-6">
-                    <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-simple" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.simpleMode">Default (Simple) Mode</span></label>
-                </div>
-                <div class="settings-actions flex gap-3">
-                    <button id="save-settings" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition" data-i18n="settings.save">Save</button>
-                    <button id="reset-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="settings.reset">Reset</button>
-                    <button id="close-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="settings.close">Close</button>
-                </div>
+    <!-- Settings panel -->
+    <div id="settings-panel" class="screen-settings fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" aria-hidden="true">
+        <div class="settings-content bg-gray-800 rounded-2xl p-8 w-full max-w-md border border-gray-700 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-purple-400" data-i18n="settings.title">Game Settings</h2>
+            <div class="setting-row flex items-center gap-3 mb-4">
+                <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-powerups" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.powerups">Enable Power-ups</span></label>
+            </div>
+            <div class="setting-row flex items-center gap-3 mb-4">
+                <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-attacks" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.attacks">Enable Attacks</span></label>
+            </div>
+            <div class="setting-row flex flex-col gap-2 mb-4">
+                <label for="opt-map" class="text-sm font-medium text-gray-300" data-i18n="settings.map">Map</label>
+                <select id="opt-map" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500">
+                    <option value="classic" data-i18n="settings.mapClassic">Classic</option>
+                    <option value="compact" data-i18n="settings.mapCompact">Compact</option>
+                    <option value="extended" data-i18n="settings.mapExtended">Extended</option>
+                </select>
+            </div>
+            <div class="setting-row flex flex-col gap-2 mb-4">
+                <label for="opt-ball-speed" class="text-sm font-medium text-gray-300" data-i18n="settings.ballSpeed">Ball speed</label>
+                <input id="opt-ball-speed" type="range" min="2" max="12" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+            <div class="setting-row flex flex-col gap-2 mb-4">
+                <label for="opt-paddle-size" class="text-sm font-medium text-gray-300" data-i18n="settings.paddleSize">Paddle size</label>
+                <input id="opt-paddle-size" type="range" min="40" max="200" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+            <div class="setting-row flex items-center gap-3 mb-6">
+                <label class="flex items-center gap-2 text-gray-300"><input type="checkbox" id="opt-simple" class="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"> <span data-i18n="settings.simpleMode">Default (Simple) Mode</span></label>
+            </div>
+            <div class="settings-actions flex gap-3">
+                <button id="save-settings" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition" data-i18n="settings.save">Save</button>
+                <button id="reset-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="settings.reset">Reset</button>
+                <button id="close-settings" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition" data-i18n="settings.close">Close</button>
             </div>
         </div>
-
-        <footer class="main-footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Pong Tournament</h3>
-                    <p data-i18n="footer.tagline">A modern multiplayer Pong gaming platform</p>
-                </div>
-                <div class="footer-section">
-                    <h3 data-i18n="footer.legal">Legal</h3>
-                    <ul>
-                        <li><a href="#privacy-policy" class="footer-link" data-i18n="footer.privacy">Privacy Policy</a></li>
-                        <li><a href="#terms-of-service" class="footer-link" data-i18n="footer.terms">Terms of Service</a></li>
-                        <li><a href="#contact" class="footer-link" data-i18n="footer.contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3 data-i18n="footer.links">Links</h3>
-                    <ul>
-                        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" data-i18n="footer.github">GitHub</a></li>
-                        <li><a href="#help" class="footer-link" data-i18n="footer.help">Help & Support</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Pong Tournament. <span data-i18n="footer.rights">All rights reserved.</span></p>
-            </div>
-        </footer>
     </div>
-
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Pong Tournament</h3>
+                <p data-i18n="footer.tagline">A modern multiplayer Pong gaming platform</p>
+            </div>
+            <div class="footer-section">
+                <h3 data-i18n="footer.legal">Legal</h3>
+                <ul>
+                    <li><a href="#privacy-policy" class="footer-link" data-i18n="footer.privacy">Privacy Policy</a></li>
+                    <li><a href="#terms-of-service" class="footer-link" data-i18n="footer.terms">Terms of Service</a></li>
+                    <li><a href="#contact" class="footer-link" data-i18n="footer.contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3 data-i18n="footer.links">Links</h3>
+                <ul>
+                    <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" data-i18n="footer.github">GitHub</a></li>
+                    <li><a href="#help" class="footer-link" data-i18n="footer.help">Help & Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Pong Tournament. <span data-i18n="footer.rights">All rights reserved.</span></p>
+        </div>
+    </footer>
+    </div>
     <script type="module" src="main.js"></script>
 </body>
 </html>
