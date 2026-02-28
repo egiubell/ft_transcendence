@@ -1,3 +1,6 @@
+This project has been created as part
+of the 42 curriculum by egiubell, tbardell, spiacent, rauer.
+
 # ft_transcendence 🏓
 
 **A modern real-time multiplayer Pong tournament web application**
@@ -20,7 +23,22 @@
 8. [Security](#-security)
 9. [Troubleshooting](#-troubleshooting)
 10. [Project Structure](#-project-structure)
-11. [Technology Stack](#-technology-stack)
+11. [Database Schema](#-database-schema)
+12. [Technology Stack](#-technology-stack)
+
+---
+
+## 📋 Team Members
+
+- **Tbardell** (Project Owner + Developer) : Decided the vision for the webapp, choose the modules and priorities, tracked the backlog and writed the readme. Done the tournament and customization Modules and frontend.
+- **Spiacent**: (Project Manager + Developer) : Managed the team and the comunication, assured the meeting and the workflow. Done the Aouth 2.0 Module.
+- **Egiubell**: (Technical Lead + Developer) : Decided what technologies to use, setup docker and managed the architecture. Done the websocket Module and backend.
+- **Rauer**: (Developer) : implemented the language module and helped the style of the webapp.
+
+---
+
+## 📋 Project Management approach
+- Worked both all together in the school, with the expection of Rauer cause he live in germany, and all from home with precise different goal.
 
 ---
 
@@ -114,7 +132,7 @@ make start
 ### Access the Application
 
 ```
-🌐 Frontend: https://localhost:8443
+🌐 Frontend: https://localhost:8443 / http://localhost:8080
 🔧 Backend API: https://localhost:3000/api
 📊 Database: PostgreSQL on port 5432
 ```
@@ -504,6 +522,39 @@ ft_transcendence/
         ├── routes/         # API endpoints
         ├── utils/          # Helpers
         └── websocket/      # Socket.io game server
+```
+
+---
+
+## 📚 Database Schema
+
+### **users** table
+```sql
+id              SERIAL PRIMARY KEY
+email           VARCHAR(255) UNIQUE NOT NULL
+username        VARCHAR(255) UNIQUE NOT NULL
+password_hash   VARCHAR(255) NOT NULL
+created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+```
+
+### **game_stats** table
+```sql
+user_id         INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE
+wins            INT DEFAULT 0
+losses          INT DEFAULT 0
+total_matches   INT DEFAULT 0
+last_updated    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+```
+
+### **game_history** table
+```sql
+id              SERIAL PRIMARY KEY
+player1_id      INT REFERENCES users(id) ON DELETE SET NULL
+player2_id      INT REFERENCES users(id) ON DELETE SET NULL
+winner_id       INT REFERENCES users(id) ON DELETE SET NULL
+player1_score   INT DEFAULT 0
+player2_score   INT DEFAULT 0
+played_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ```
 
 ---
