@@ -37,7 +37,7 @@ of the 42 curriculum by egiubell, tbardell, spiacent, rauer.
 
 ---
 
-## 📋 Project Management approach
+## 📊 Project Management approach
 - Worked both all together in the school, with the expection of Rauer cause he live in germany, and all from home with precise different goal.
 
 ---
