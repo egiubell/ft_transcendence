@@ -5,8 +5,6 @@ of the 42 curriculum by egiubell, tbardell, spiacent, rauer.
 
 **A modern real-time multiplayer Pong tournament web application**
 
-[![Project Status](https://img.shields.io/badge/Status-Production_Ready-success)]()
-[![Module Points](https://img.shields.io/badge/Module_Points-14%2F14-brightgreen)]()
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue)]()
 [![HTTPS](https://img.shields.io/badge/HTTPS-Enabled-green)]()
 
